@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DGT Assessment</title>
+    <!--Set CSS style sheets-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- jQuery 1.8 or later, 33 KB -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <!-- Fotorama from CDNJS, 19 KB -->
+    <link href="static/fotorama.css" rel="stylesheet">
+    <script src="static/fotorama.js"></script>
+
+</head>
+
+<body>
+    <!--Base page info-->
+    <a href="{{url_for('home')}}"><img class="icon" src="{{ url_for('static', filename='logo.webp') }}" alt="logo Icon" style="width:10%", ></a>
+    <!--nav-->
+    <ul>
+        <li><a href="{{url_for('home')}}">Login</a></li>
+        <li><a href="{{url_for('signup')}}">Signup</a></li>
+    </ul>
+
+        {% block content %}
+            <!-- Where the cother pages override the content -->
+        {% endblock %}
+</body>
+</html>

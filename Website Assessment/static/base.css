@@ -1,0 +1,47 @@
+body{
+    padding:10px;
+    background-color: #FCEADE;
+}
+
+.icon {
+    max-width:10%;
+}
+
+ul {
+  list-style-type: none;
+  margin-right: 1747px;
+  padding: 0;
+  overflow: hidden;
+  background-color: #EA526F;
+}
+
+li {
+  float: left;
+  border-right: 1px solid #ffffff;
+}
+
+li a {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+a {
+    text-decoration : none
+}
+
+li:last-child {
+  border-right: none;
+}
+li a:hover {
+  background-color: #FF8A5B;
+}
+
+.search {
+    padding: 15px;
+}
+.searchButton {
+    padding: 15px;
+}
