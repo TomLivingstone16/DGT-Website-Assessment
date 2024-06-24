@@ -12,7 +12,7 @@
     <input class="search" type="text" placeholder="Search.." name="search">
     <button class="searchButton" type="submit"><i class="fa fa-search"></i></button>
 </form>
-{% for key in temp %}
-    <p>{{temp[key]}}</p>
+{% for key in range(3) %}
+    <p>{{rows[key][1]}}</p>
     {% endfor %}
-{% endblock %}
+{%endblock%}
