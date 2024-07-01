@@ -2,6 +2,9 @@ from flask import Flask, render_template, request,session
 import sqlite3
 import re
 
+
+
+
 def execute_sql(sql,val):
     """This function commits sql changes to the database."""
     DATABASE = "U:\profile\Documents\Website Assessment\Website Assessment\database.db"
@@ -14,6 +17,8 @@ def execute_sql(sql,val):
         cursor.execute(sql)
         db.commit()
 app = Flask(__name__)
+
+app.secret_key = 'beans on toast'
 
 # Home route
 @app.route('/',methods=("GET", "POST"))
@@ -28,8 +33,14 @@ def home():
     print(rows)
 
 
-    return render_template('index.html',rows=rows)  # Return index page
+    loggedIn = False
+    if session['loggedin'] == True:
+        print(session['username'])
+        loggedIn = True
 
+
+
+    return render_template('index.html',rows=rows,loggedIn = loggedIn)  # Return index page
 @app.route('/signup',methods=['GET','POST'])
 def signup():
     msg = ''
@@ -58,7 +69,26 @@ def signup():
     return render_template('signup.html',msg =msg)
 @app.route('/login',methods=['GET','POST'])
 def login():
-    return render_template('signup.html')
+    msg = ''
+    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        DATABASE = "U:\profile\Documents\Website Assessment\Website Assessment\database.db"
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}" AND [Password] = "{password}"')
+        account = cursor.fetchone()
+        if account:
+            session['loggedin'] = True
+            session['username'] = username
+            msg = 'Logged in successfully !'
+            return render_template('index.html', msg = msg)
+        else:
+            msg = 'Incorrect username / password !'
+    return render_template('login.html', msg = msg)
+@app.route('/mypage',methods=['GET','POST'])
+def userpage():
+    print("Beans on Toast")
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

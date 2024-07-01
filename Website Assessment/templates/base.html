@@ -20,12 +20,6 @@
 <body>
     <!--Base page info-->
     <a href="{{url_for('home')}}"><img class="icon" src="{{ url_for('static', filename='logo.webp') }}" alt="logo Icon" style="width:10%", ></a>
-    <!--nav-->
-    <ul>
-        <li><a href="{{url_for('home')}}">Login</a></li>
-        <li><a href="{{url_for('signup')}}">Signup</a></li>
-    </ul>
-
         {% block content %}
             <!-- Where the cother pages override the content -->
         {% endblock %}

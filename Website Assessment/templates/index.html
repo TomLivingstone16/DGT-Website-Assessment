@@ -3,16 +3,28 @@
 <head>
     <title>Home</title>
 </head>
+
 {% extends "base.html" %}
 {% block content %}
 
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--nav-->
+            <ul>
+                <li class="myAccount"><a href="{{url_for('userpage')}}" >My Account</a></li>
+            </ul>
+{% endif %}
 <h1>Temporary Title: Replace later</h1> <!--Main title-->
 
 <form class="example" action="{{url_for('home')}}">
     <input class="search" type="text" placeholder="Search.." name="search">
     <button class="searchButton" type="submit"><i class="fa fa-search"></i></button>
+    <p>{{msg}}</p>
 </form>
-{% for key in range(3) %}
-    <p>{{rows[key][1]}}</p>
-    {% endfor %}
+
 {%endblock%}
