@@ -9,22 +9,23 @@ body{
 
 ul {
   list-style-type: none;
-  margin-right: 1747px;
   padding: 0;
   overflow: hidden;
   background-color: #EA526F;
+  width : 200px
+
 }
 
 li {
-  float: left;
+  float: none;
   border-right: 1px solid #ffffff;
 }
 
 li a {
-  display: inline-block;
+  float: left;
   color: white;
   text-align: center;
-  padding: 14px 16px;
+  padding: 14px 28px;
   text-decoration: none;
 }
 
@@ -44,7 +45,4 @@ li a:hover {
 }
 .searchButton {
     padding: 15px;
-}
-.myAccount {
-    float: none;
 }

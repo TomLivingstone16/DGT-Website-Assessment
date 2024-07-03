@@ -16,7 +16,8 @@
     {% else %}
     <!--nav-->
             <ul>
-                <li class="myAccount"><a href="{{url_for('userpage')}}" >My Account</a></li>
+                <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
+                <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
             </ul>
 {% endif %}
 <h1>Temporary Title: Replace later</h1> <!--Main title-->

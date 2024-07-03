@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request,session
+from flask import Flask, render_template, request, session, redirect, url_for
 import sqlite3
 import re
 
@@ -7,7 +7,7 @@ import re
 
 def execute_sql(sql,val):
     """This function commits sql changes to the database."""
-    DATABASE = "U:\profile\Documents\Website Assessment\Website Assessment\database.db"
+    DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     if val != ():
@@ -34,13 +34,18 @@ def home():
 
 
     loggedIn = False
-    if session['loggedin'] == True:
-        print(session['username'])
-        loggedIn = True
+    try:
+        if session['loggedin'] == True:
+            print(session['username'])
+            loggedIn = True
+    except:
+        print("Beans")
 
 
 
     return render_template('index.html',rows=rows,loggedIn = loggedIn)  # Return index page
+
+# Log In system
 @app.route('/signup',methods=['GET','POST'])
 def signup():
     msg = ''
@@ -48,7 +53,7 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
-        DATABASE = "U:\profile\Documents\Website Assessment\Website Assessment\database.db"
+        DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
         cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"', )
@@ -73,7 +78,7 @@ def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
-        DATABASE = "U:\profile\Documents\Website Assessment\Website Assessment\database.db"
+        DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
         cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}" AND [Password] = "{password}"')
@@ -86,9 +91,24 @@ def login():
         else:
             msg = 'Incorrect username / password !'
     return render_template('login.html', msg = msg)
-@app.route('/mypage',methods=['GET','POST'])
-def userpage():
-    print("Beans on Toast")
+@app.route('/logout')
+def logout():
+    session.pop('loggedin', None)
+    session.pop('id', None)
+    session.pop('username', None)
+    return redirect(url_for('home'))
+
+#User Pages & Posts
+@app.route('/page/<username>',methods=['GET','POST'])
+def userpage(username):
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"')
+    user = cursor.fetchone()
+    print(user)
+    return render_template("userpage.html",username = username)
+
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
