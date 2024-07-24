@@ -106,8 +106,8 @@ def userpage(username):
     cursor = db.cursor()
     cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"')
     user = cursor.fetchone()
-    print(user)
-    return render_template("userpage.html",username = username)
+    print(user[4])
+    return render_template("userpage.html",username = user[1],followerCount = user[4])
 
 # Run the app
 if __name__ == "__main__":
