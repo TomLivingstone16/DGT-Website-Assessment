@@ -28,4 +28,14 @@
     <p>{{msg}}</p>
 </form>
 
+<a class="profileLink" href="{{url_for('userpage',username=top1[1])}}">{{top1[1]}}</a>
+    <img class="profilePic" src="{{ url_for('static', filename=prof1) }}">
+    <h2 class="followerCount">{{top1[4]}} Followers</h2>
+<a class="profileLink" href="{{url_for('userpage',username=top2[1])}}">{{top2[1]}}</a>
+    <img class="profilePic" src="{{ url_for('static', filename=prof2) }}">
+    <h2 class="followerCount">{{top2[4]}} top1</h2>
+<a class="profileLink" href="{{url_for('userpage',username=top3[1])}}">{{top3[1]}}</a>
+    <img class="profilePic" src="{{ url_for('static', filename=prof3) }}">
+    <h2 class="followerCount">{{top3[4]}} Followers</h2>
+
 {%endblock%}

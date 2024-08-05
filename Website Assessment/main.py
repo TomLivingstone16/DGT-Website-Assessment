@@ -34,7 +34,7 @@ def get_profile_picture(username):
 
     print("Image retrieved and written to file.")
 
-    return "static/"+username+".jpg"
+    return username+".jpg"
 
 def execute_sql(sql,val):
     """This function commits sql changes to the database."""
@@ -61,7 +61,12 @@ def home():
     c = cursor.execute(sql)
     rows = c.fetchall()
     db.close()
-    print(rows)
+    top1 = rows[0]
+    top2 = rows[1]
+    top3 = rows[2]
+    prof1 = get_profile_picture(top1[1])
+    prof2 = get_profile_picture(top2[1])
+    prof3 = get_profile_picture(top3[1])
 
 
     loggedIn = False
@@ -74,7 +79,7 @@ def home():
 
 
 
-    return render_template('index.html',rows=rows,loggedIn = loggedIn)  # Return index page
+    return render_template('index.html',rows=rows,loggedIn = loggedIn,top1 = top1, top2 = top2, top3 = top3,prof1=prof1,prof2=prof2,prof3=prof3)  # Return index page
 
 # Log In system
 @app.route('/signup',methods=['GET','POST'])

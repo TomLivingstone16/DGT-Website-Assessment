@@ -7,8 +7,9 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <h1>{{username}}</h1>
-    <h2>&nbsp;&nbsp;&nbsp;&nbsp;{{followerCount}} Followers</h2>
-    <img src="{{profile_picture}}">
+    <h2>{{username}}</h2>
+    <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
+    <h2 class="followerCount">{{followerCount}} Followers</h2>
+
 
 {%endblock%}
