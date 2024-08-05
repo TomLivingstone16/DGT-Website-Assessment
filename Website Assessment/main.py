@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-import sqlite3, re, base64
+import sqlite3, re, base64,os
 def get_image_from_blob():
     blobfile = open('static/profile_blob.txt', 'r')
     image_data = blobfile.read()
@@ -49,11 +49,29 @@ def execute_sql(sql,val):
         db.commit()
 app = Flask(__name__)
 
+
 app.secret_key = 'beans on toast'
 
 # Home route
 @app.route('/',methods=("GET", "POST"))
 def home():
+    if request.method == 'POST':
+        search_term = request.form['search']  # Get search term (ID of dictionary
+        global sql
+        global val
+        sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}'"
+        DATABASE = "database.db"
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        print("beans on toast")
+        c = cursor.execute(sql)
+        rows = c.fetchall()
+        db.close()
+        row_true=rows[0]
+        profile_pic = get_profile_picture(row_true[1])
+        # Return the combo view page
+        return render_template('results.html', search_term=search_term, rows=rows,profile_pic=profile_pic)
+
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
