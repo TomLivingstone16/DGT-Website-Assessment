@@ -63,7 +63,7 @@ li a:hover {
     padding: 12px;
     display: inline;
 }
-input[type=text] {
+.searchBar {
     width: 200px;
     padding: 12px 20px;
     margin: 8px 0;
@@ -76,4 +76,21 @@ input[type=text]:focus {
     outline: none;
     background-color: lightgrey;
     border 3px solid #555;
+}
+input[type=password]:focus {
+    outline: none;
+    background-color: lightgrey;
+    border 3px solid #555;
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height:150px;
+  background-color: #25CED1;
+  color: white;
+  padding: 15px;
+  text-align: center;
 }

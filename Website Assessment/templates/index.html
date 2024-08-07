@@ -23,19 +23,22 @@
 <h1>Temporary Title: Replace later</h1> <!--Main title-->
 
 <form method="post" class="w3-container">
-    <input  type="text" placeholder="Search..." name="search" value="{{request.form['search']}}">
+    <input class="searchBar" type="text" placeholder="Search..." name="search" value="{{request.form['search']}}">
     <button class="searchButton" type="submit"><i class="fa fa-search"></i></button>
     <br>
 </form>
 
-<a class="profileLink" href="{{url_for('userpage',username=top1[1])}}">{{top1[1]}}</a>
+<h2>Top profiles:</h2>
+<a class="profileLink" href="{{url_for('userpage',username=top1[1])}}"> &nbsp;&nbsp;{{top1[1]}}</a>
     <img class="profilePic" src="{{ url_for('static', filename=prof1) }}">
-    <h2 class="followerCount">{{top1[4]}} Followers</h2>
-<a class="profileLink" href="{{url_for('userpage',username=top2[1])}}">{{top2[1]}}</a>
+    <h3 class="followerCount">{{top1[4]}} Followers</h3>
+<a class="profileLink" href="{{url_for('userpage',username=top2[1])}}"> &nbsp;&nbsp;{{top2[1]}}</a>
     <img class="profilePic" src="{{ url_for('static', filename=prof2) }}">
-    <h2 class="followerCount">{{top2[4]}} Followers</h2>
-<a class="profileLink" href="{{url_for('userpage',username=top3[1])}}">{{top3[1]}}</a>
+    <h3 class="followerCount">{{top2[4]}} Followers</h3>
+<a class="profileLink" href="{{url_for('userpage',username=top3[1])}}"> &nbsp;&nbsp;{{top3[1]}}</a>
     <img class="profilePic" src="{{ url_for('static', filename=prof3) }}">
-    <h2 class="followerCount">{{top3[4]}} Followers</h2>
+    <h3 class="followerCount">{{top3[4]}} Followers</h3>
+
+
 
 {%endblock%}

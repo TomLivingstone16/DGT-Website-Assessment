@@ -6,8 +6,11 @@
 
 {% extends "base.html" %}
 {% block content %}
-
-<a class="profileLink" href="{{url_for('userpage',username=rows[0][1])}}">{{rows[0][1]}}</a>
-    <img class="profilePic" src="{{ url_for('static', filename=profile_pic) }}">
-    <h2 class="followerCount">{{rows[0][4]}} Followers</h2>
+{% if results == True %}
+        <a class="profileLink" href="{{url_for('userpage',username=rows[0][1])}}">{{rows[0][1]}}</a>
+        <img class="profilePic" src="{{ url_for('static', filename=profile_pic) }}">
+        <h2 class="followerCount">{{rows[0][4]}} Followers</h2>
+    {% else %}
+        <p>No results found.</p>
+{% endif %}
 {%endblock%}

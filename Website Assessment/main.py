@@ -1,16 +1,12 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 import sqlite3, re, base64,os
 def get_image_from_blob():
-    blobfile = open('static/profile_blob.txt', 'r')
-    image_data = blobfile.read()
-    # Convert from a tuple to a byte
-    file = str(image_data).strip('(" ",)')
-    finalFile = file.strip("b' '")
-    print(finalFile)
-    # Decode the file
-    blob = base64.b64decode(finalFile)
+    with open('static/default_profile.jpg', 'rb') as f:
+        image_data = str(base64.b64encode(f.read()))
+    # Convert from a string to a byte
+
     # Create a new image file with the data from the blob
-    return blob
+    return image_data
 def get_profile_picture(username):
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -36,6 +32,7 @@ def get_profile_picture(username):
 
     return username+".jpg"
 
+#Unused but here as a reference template for sql executions
 def execute_sql(sql,val):
     """This function commits sql changes to the database."""
     DATABASE = "database.db"
@@ -46,7 +43,7 @@ def execute_sql(sql,val):
         db.commit()
     else:
         cursor.execute(sql)
-        db.commit()
+        db.commit() ##
 app = Flask(__name__)
 
 
@@ -67,10 +64,13 @@ def home():
         c = cursor.execute(sql)
         rows = c.fetchall()
         db.close()
-        row_true=rows[0]
-        profile_pic = get_profile_picture(row_true[1])
-        # Return the combo view page
-        return render_template('results.html', search_term=search_term, rows=rows,profile_pic=profile_pic)
+        try:
+            row_true=rows[0]
+            profile_pic = get_profile_picture(row_true[1])
+            # Return the combo view page
+            return render_template('results.html', search_term=search_term, rows=rows,profile_pic=profile_pic,results=True)
+        except:
+            return render_template('results.html',results=False)
 
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
@@ -79,6 +79,11 @@ def home():
     c = cursor.execute(sql)
     rows = c.fetchall()
     db.close()
+
+    def sortFunc(e):
+        return e[4]
+
+    rows.sort(reverse=True, key=sortFunc)
     top1 = rows[0]
     top2 = rows[1]
     top3 = rows[2]
@@ -121,7 +126,8 @@ def signup():
         elif not username or not password or not email:
             msg = 'Please fill out the form!'
         else:
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,{get_image_from_blob()})')
+            image = get_image_from_blob()
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}")')
             db.commit()
             msg = 'You have successfully registered !'
 
@@ -141,7 +147,25 @@ def login():
             session['loggedin'] = True
             session['username'] = username
             msg = 'Logged in successfully !'
-            return render_template('index.html', msg = msg)
+            sql = "SELECT * FROM 'tUsers'"
+            DATABASE = "database.db"
+            db = sqlite3.connect(DATABASE)
+            cursor = db.cursor()
+            c = cursor.execute(sql)
+            rows = c.fetchall()
+            db.close()
+
+            def sortFunc(e):
+                return e[4]
+
+            rows.sort(reverse=True, key=sortFunc)
+            top1 = rows[0]
+            top2 = rows[1]
+            top3 = rows[2]
+            prof1 = get_profile_picture(top1[1])
+            prof2 = get_profile_picture(top2[1])
+            prof3 = get_profile_picture(top3[1])
+            return render_template('index.html', msg = msg,top1= top1,top2=top2,top3=top3,prof1=prof1,prof2=prof2,prof3=prof3)
         else:
             msg = 'Incorrect username / password !'
     return render_template('login.html', msg = msg)
