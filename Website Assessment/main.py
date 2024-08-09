@@ -54,8 +54,6 @@ app.secret_key = 'beans on toast'
 def home():
     if request.method == 'POST':
         search_term = request.form['search']  # Get search term (ID of dictionary
-        global sql
-        global val
         sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}'"
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
@@ -93,13 +91,14 @@ def home():
 
 
     loggedIn = False
+
     try:
         if session['loggedin'] == True:
             print(session['username'])
             loggedIn = True
+
     except:
         print("Beans")
-
 
 
     return render_template('index.html',rows=rows,loggedIn = loggedIn,top1 = top1, top2 = top2, top3 = top3,prof1=prof1,prof2=prof2,prof3=prof3)  # Return index page
@@ -187,8 +186,26 @@ def userpage(username):
     print(user[4])
     profile_picture = get_profile_picture(user[1])
     print(profile_picture)
-    return render_template("userpage.html",username = user[1],followerCount = user[4],profile_picture = profile_picture)
+    loggedIn = False
 
+    try:
+        if session['loggedin'] == True:
+            print(session['username'])
+            loggedIn = True
+
+    except:
+        print("Beans")
+    if loggedIn == True:
+        loggedInUser = session['username']
+    else:
+        loggedInUser = "N/A"
+    print(user[1] + " " + loggedInUser)
+
+    return render_template("userpage.html",username = user[1],followerCount = user[4],profile_picture = profile_picture,loggedIn = loggedIn, loggedInUser=loggedInUser)
+
+@app.route('/subscribe/<username>',methods=['GET','POST'])
+def subscribe(username):
+    print("hello")
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

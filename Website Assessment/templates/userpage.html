@@ -6,7 +6,22 @@
 
 {% extends "base.html" %}
 {% block content %}
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--Nav-->
+        {% if loggedInUser == username %}
 
+        {%else%}
+            <ul class="subscribeButton">
+                <li><a href="{{url_for('subscribe', username=username)}}" >Subscribe <i class="fa fa-star"></i></a></li>
+            </ul>
+        {%endif%}
+{% endif %}
     <h2>{{username}}</h2>
     <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
     <h2 class="followerCount">{{followerCount}} Followers</h2>

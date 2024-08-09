@@ -58,6 +58,14 @@ li:last-child {
 li a:hover {
   background-color: #FF8A5B;
 }
+.subscribeButton{
+  list-style-type: none;
+  padding: 0;
+  overflow: hidden;
+  background-color: #EA526F;
+  width : 146px
+
+}
 
 .searchButton {
     padding: 12px;

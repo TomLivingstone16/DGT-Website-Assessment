@@ -6,11 +6,25 @@
 
 {% extends "base.html" %}
 {% block content %}
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--nav-->
+            <ul>
+                <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
+                <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
+            </ul>
+{% endif %}
 {% if results == True %}
+        <h3>Search results for {{search_term}}:</h3>
         <a class="profileLink" href="{{url_for('userpage',username=rows[0][1])}}">{{rows[0][1]}}</a>
         <img class="profilePic" src="{{ url_for('static', filename=profile_pic) }}">
         <h2 class="followerCount">{{rows[0][4]}} Followers</h2>
     {% else %}
-        <p>No results found.</p>
+        <p>No results found..</p>
 {% endif %}
 {%endblock%}
