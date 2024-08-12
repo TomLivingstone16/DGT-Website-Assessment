@@ -102,3 +102,7 @@ footer {
   padding: 15px;
   text-align: center;
 }
+
+.post {
+  width:500px;
+}

@@ -7,6 +7,51 @@ def get_image_from_blob():
 
     # Create a new image file with the data from the blob
     return image_data
+def return_image(image_name,username):
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
+    c = cursor.execute(query)
+    image_data = c.fetchone()
+    # Convert from a tuple to a byte
+    file = str(image_data).strip('(" ",)')
+    finalFile = file.strip("b' '")
+    # Decode the file
+    blob = base64.b64decode(finalFile)
+    # Create a new image file with the data from the blob
+    img_file = open("static/" + image_name + "_" + username + ".jpg", 'wb')
+    img_file.write(blob)
+    img_file.close()
+
+    print("Image retrieved and written to file.")
+
+    return image_name+"_"+username + ".jpg"
+def return_all_posts(username):
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    query = f"SELECT PostName FROM tPosts WHERE [Username] = '{username}'"
+    c = cursor.execute(query)
+    images = c.fetchall()
+    imageList = []
+    for i in range(len(images)):
+        print(str(images[i]) + ":)")
+        imageList.append(return_image(str(images[i]).strip("(' ',)"), username))
+        print(imageList[i])
+    print(imageList)
+    return imageList
+def delete_profile_files():
+    sql = "SELECT * FROM 'tUsers'"
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    c = cursor.execute(sql)
+    rows = c.fetchall()
+    db.close()
+
+    for i in range(len(rows)):
+        os.remove(get_profile_picture(rows[i]))
 def get_profile_picture(username):
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -53,6 +98,7 @@ app.secret_key = 'beans on toast'
 @app.route('/',methods=("GET", "POST"))
 def home():
     if request.method == 'POST':
+        delete_profile_files()
         search_term = request.form['search']  # Get search term (ID of dictionary
         sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}'"
         DATABASE = "database.db"
@@ -106,6 +152,7 @@ def home():
 # Log In system
 @app.route('/signup',methods=['GET','POST'])
 def signup():
+    delete_profile_files()
     msg = ''
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:
         username = request.form['username']
@@ -133,6 +180,7 @@ def signup():
     return render_template('signup.html',msg =msg)
 @app.route('/login',methods=['GET','POST'])
 def login():
+    delete_profile_files()
     msg = ''
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
@@ -178,6 +226,7 @@ def logout():
 #User Pages & Posts
 @app.route('/page/<username>',methods=['GET','POST'])
 def userpage(username):
+    delete_profile_files()
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
@@ -188,6 +237,7 @@ def userpage(username):
     print(profile_picture)
     loggedIn = False
 
+    image = return_all_posts("Jonathan1234")
     try:
         if session['loggedin'] == True:
             print(session['username'])
@@ -201,11 +251,11 @@ def userpage(username):
         loggedInUser = "N/A"
     print(user[1] + " " + loggedInUser)
 
-    return render_template("userpage.html",username = user[1],followerCount = user[4],profile_picture = profile_picture,loggedIn = loggedIn, loggedInUser=loggedInUser)
+    return render_template("userpage.html",username = user[1],followerCount = user[4],profile_picture = profile_picture,loggedIn = loggedIn, loggedInUser=loggedInUser,post=image,len=len(image))
 
 @app.route('/subscribe/<username>',methods=['GET','POST'])
 def subscribe(username):
-    print("hello")
+   print('hello')
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

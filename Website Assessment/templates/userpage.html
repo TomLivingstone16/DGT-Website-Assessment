@@ -26,5 +26,9 @@
     <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
     <h2 class="followerCount">{{followerCount}} Followers</h2>
 
+    {% for i in range (0, len)%}
+        <img class="post" src="{{url_for('static',filename=post[i])}}">
+    {% endfor %}
+
 
 {%endblock%}
