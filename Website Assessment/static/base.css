@@ -66,7 +66,14 @@ li a:hover {
   width : 146px
 
 }
+.unsubscribeButton{
+  list-style-type: none;
+  padding: 0;
+  overflow: hidden;
+  background-color: lightgrey;
+  width : 164px
 
+}
 .searchButton {
     padding: 12px;
     display: inline;

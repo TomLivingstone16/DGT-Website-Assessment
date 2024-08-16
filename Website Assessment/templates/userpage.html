@@ -17,9 +17,15 @@
         {% if loggedInUser == username %}
 
         {%else%}
+            {% if subscribed == False %}
             <ul class="subscribeButton">
                 <li><a href="{{url_for('subscribe', username=username)}}" >Subscribe <i class="fa fa-star"></i></a></li>
             </ul>
+            {%else%}
+                <ul class="unsubscribeButton">
+                <li><a href="{{url_for('unsubscribe', username=username)}}" >Unsubscribe <i class="fa fa-star"></i></a></li>
+            </ul>
+            {%endif%}
         {%endif%}
 {% endif %}
     <h2>{{username}}</h2>

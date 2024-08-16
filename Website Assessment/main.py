@@ -3,6 +3,7 @@ import sqlite3
 import re
 import base64
 import os
+
 def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
@@ -276,9 +277,7 @@ def userpage(username):
     cursor = db.cursor()
     cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"')
     user = cursor.fetchone()
-    print(user[4])
     profile_picture = get_profile_picture(user[1])  # Get user profile pic
-    print(profile_picture)
     # Get all posts
     image = return_all_posts(username)
     # Check if logged in
@@ -290,11 +289,22 @@ def userpage(username):
     except:
         print("Nothing happens here")
     if loggedIn:
-        loggedInUser = session['username']  # The page we're going to is ours, so make sure we know that
+        loggedInUser = session['username']
+        # Check if we're subscribed
+        var = cursor.execute(f'SELECT * FROM tSubscriptions WHERE [Subscriber] = "{loggedInUser}" AND [To Which User] = "{username}"')
+        db.commit()
+        isSubscribed = var.fetchone()
+        if isSubscribed is None:
+            subscribed = False
+        else:
+            subscribed = True
+        # The page we're going to is ours, so make sure we know that
     else:
         loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
+        subscribed = False  # Since there's no user, we can't be subscribed anyway
+
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image))
+    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed)
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
 def subscribe(username):  # Serves as a reload of the userpage but adding the subscription
     # Check if logged in, for safety reasons
@@ -315,14 +325,46 @@ def subscribe(username):  # Serves as a reload of the userpage but adding the su
     cursor = db.cursor()
     # Insert into subscriptions table
     cursor.execute(f'INSERT INTO tSubscriptions VALUES (NULL,"{loggedInUser}","{username}")')
+    db.commit()
     # Get Follower count and convert from tuple to integer
     FollowerCount = cursor.execute(f"SELECT FollowerCount FROM tUsers WHERE Username = '{username}'")
-    FollowerInt = int(str(FollowerCount.fetchone()).strip("( ),"))
+    FollowerInt = int(str(FollowerCount.fetchone()).strip("( ),")) + 1
     # Update tUsers to add 1 to followerCount
-    cursor.execute(f"UPDATE tUsers SET FollowerCount = REPLACE (FollowerCount, '{FollowerInt}','{FollowerInt+1}') ")
-
+    cursor.execute(f"UPDATE tUsers SET FollowerCount = {FollowerInt} WHERE Username = '{username}'")
+    db.commit()
+    db.close()
+    print("Subscribed!")
     return redirect(url_for("userpage", username=username))
-
+@app.route('/unsubscribe/<username>', methods=['GET', 'POST'])
+def unsubscribe(username):  # Serves as a reload of the userpage but removing the subscription
+    # Check if logged in, for safety reasons
+    loggedIn = False
+    try:
+        if session['loggedin']:
+            print(session['username'])
+            loggedIn = True
+    except:
+        print("Nothing happens here")
+    if loggedIn:
+        loggedInUser = session['username']  # We are logged in, so supply that to the database
+    else:
+        loggedInUser = "N/A"  # We are not logged in. This should never happen, but it would be funny if it did.
+    # Connect to database
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    # Remove from subscriptions table
+    cursor.execute(f'DELETE FROM tSubscriptions WHERE Subscriber = "{loggedInUser}" AND [To Which User] = "{username}"')
+    db.commit()
+    # Get Follower count and convert from tuple to integer
+    FollowerCount = cursor.execute(f"SELECT FollowerCount FROM tUsers WHERE Username = '{username}'")
+    FollowerInt = int(str(FollowerCount.fetchone()).strip("( ),")) - 1
+    # Update tUsers to remove 1 from followerCount
+    cursor.execute(f"UPDATE tUsers SET FollowerCount = {FollowerInt} WHERE Username = '{username}'")
+    db.commit()
+    db.close()
+    print("Subscribed!")
+    return redirect(url_for("userpage", username=username))
 
 # Run the app
 if __name__ == "__main__":
