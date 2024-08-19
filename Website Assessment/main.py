@@ -133,6 +133,7 @@ app.secret_key = 'beans on toast'
 @app.route('/', methods=("GET", "POST"))
 def home():
     if request.method == 'POST':  # If we want to search for something
+        delete_post_files() #Remove the posts
         delete_image_files()  # Remove the profile pictures
         search_term = request.form['search']  # Get search term (ID of dictionary)
         # Find the correct search term from user table
@@ -174,6 +175,23 @@ def home():
     prof2 = get_profile_picture(top2[1])
     prof3 = get_profile_picture(top3[1])
 
+    sql = "SELECT * FROM 'tPosts'"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    c = cursor.execute(sql)
+    posts = c.fetchall()
+    db.close()
+
+    # Sort function
+    def sort_func(e):
+        return e[4]
+    print(posts[0])
+    # Sort the rows so the highest are at the front
+    posts.sort(reverse=True, key=sort_func)
+    print(posts[0][1])
+    topPost1 = return_image(posts[0][3], posts[0][1])
+    topPost2 = return_image(posts[1][3], posts[1][1])
+    topPost3 = return_image(posts[2][3], posts[2][1])
     # Check if we're logged in or not
     loggedIn = False
     try:
@@ -185,7 +203,7 @@ def home():
         print("Nothing happens here")
 
     # Return the index page
-    return render_template('index.html', rows=rows, loggedIn=loggedIn, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3)  # Return index page
+    return render_template('index.html', loggedIn=loggedIn, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)  # Return index page
 # Log In system
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
