@@ -133,7 +133,7 @@ app.secret_key = 'beans on toast'
 @app.route('/', methods=("GET", "POST"))
 def home():
     if request.method == 'POST':  # If we want to search for something
-        delete_post_files() #Remove the posts
+        delete_post_files()  # Remove the posts
         delete_image_files()  # Remove the profile pictures
         search_term = request.form['search']  # Get search term (ID of dictionary)
         # Find the correct search term from user table
@@ -209,7 +209,7 @@ def home():
 def signup():
     delete_image_files()  # Delete profile pics
     msg = ''
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form and 'email' in request.form:  # AKA if all data is in its proper place
+    if request.method == 'POST' and 'username' and 'password' and 'email' in request.form:  # AKA if all data is in its proper place
         # Set variables to the inputs
         username = request.form['username']
         password = request.form['password']
@@ -230,7 +230,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "ON")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -383,6 +383,26 @@ def unsubscribe(username):  # Serves as a reload of the userpage but removing th
     db.close()
     print("Subscribed!")
     return redirect(url_for("userpage", username=username))
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST' and 'profilePic' in request.form:
+        newProfilePic = request.form['profilePic']
+        print(newProfilePic)
+        with open(f"static/{newProfilePic}", "wb") as f:
+            image_data = str(base64.b64encode(f.read()))
+            print(image_data)
+            open(f"static/{image_data}", "rb")
+            print("Done!")
+        # Connect to the database
+        DATABASE = "database.db"
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}"', )
+    return render_template('settings.html')
+@app.route('/newpost',methods=['GET', 'POST'])
+def addpost():
+
+    return render_template('addpost.html') #currently does not exist, will be added later
 
 # Run the app
 if __name__ == "__main__":

@@ -195,3 +195,9 @@ img {
 .footerdot:hover {
     background-color: black;
 }
+.userpageButtons {
+    padding: 13px 26.75px;
+}
+.label{
+   font-size: 25px
+}

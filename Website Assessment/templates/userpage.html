@@ -15,7 +15,10 @@
     {% else %}
     <!--Nav-->
         {% if loggedInUser == username %}
-
+            <ul>
+            <li><a class="userpageButtons" href="{{url_for('addpost')}}">Post</a></li>
+            <li><a class="userpageButtons" href="{{url_for('settings')}}">Settings</a></li>
+            </ul>
         {%else%}
             {% if subscribed == False %}
             <ul class="subscribeButton">

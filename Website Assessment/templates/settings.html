@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Settings</title>
+</head>
+
+{% extends "base.html" %}
+{% block content %}
+
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--nav-->
+            <ul>
+                <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
+                <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
+            </ul>
+
+<form action="{{url_for('settings')}}" method="post">
+    <label for="profilePic" class="label">Change Profile Picture</label>
+    <br>
+    <input type="file" id="profilePic" name="profilePic"  >
+    <br>
+    <input type="submit" class="btn" value="Submit">
+</form>
+{% endif %}
+{%endblock%}
