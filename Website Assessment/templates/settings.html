@@ -20,12 +20,13 @@
                 <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
             </ul>
 
-<form action="{{url_for('settings')}}" method="post">
-    <label for="profilePic" class="label">Change Profile Picture</label>
+<form action="{{url_for('upload_file')}}" method="post" enctype="multipart/form-data">
+    <label for="file" class="label">Change Profile Picture</label>
     <br>
-    <input type="file" id="profilePic" name="profilePic"  >
+    <input type="file" id="file" name="file" />
     <br>
-    <input type="submit" class="btn" value="Submit">
+    <input type="submit" class="btn" value="Submit" />
 </form>
+<script src="static/getimage.js"></script>
 {% endif %}
 {%endblock%}

@@ -385,25 +385,26 @@ def unsubscribe(username):  # Serves as a reload of the userpage but removing th
     return redirect(url_for("userpage", username=username))
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    if request.method == 'POST' and 'profilePic' in request.form:
-        newProfilePic = request.form['profilePic']
-        print(newProfilePic)
-        with open(f"static/{newProfilePic}", "wb") as f:
-            image_data = str(base64.b64encode(f.read()))
-            print(image_data)
-            open(f"static/{image_data}", "rb")
-            print("Done!")
-        # Connect to the database
-        DATABASE = "database.db"
-        db = sqlite3.connect(DATABASE)
-        cursor = db.cursor()
-        cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}"', )
     return render_template('settings.html')
 @app.route('/newpost',methods=['GET', 'POST'])
 def addpost():
 
     return render_template('addpost.html') #currently does not exist, will be added later
-
+@app.route('/uploader', methods = ['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        f = request.files['file']
+        f.save(f"static/temp_image.jpg")
+        with open('static/temp_image.jpg', 'rb') as f:
+            # Convert to Base64 for easy transfer
+            image_data = str(base64.b64encode(f.read()))
+        os.remove("static/temp_image.jpg")
+        DATABASE = "database.db"
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}" WHERE Username = "{session["username"]}"' )
+        db.commit()
+        return render_template('settings.html')
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
