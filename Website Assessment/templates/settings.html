@@ -20,13 +20,60 @@
                 <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
             </ul>
 
-<form action="{{url_for('upload_file')}}" method="post" enctype="multipart/form-data">
+
+<form action="{{url_for('reload_settings')}}" method="post" enctype="multipart/form-data">
+    <div class="left">
+    <label for="Username" class="label">Change Account Details</label>
+    <br>
+    <input id="username" name="username" type="text" placeholder="Enter Your Username" >
+    <br>
+    <br>
+    <input id="email" name="email" type="text"  placeholder="Change Email" >
+    <br>
+    <br>
+    <input type="text" id="password" name="password" placeholder="Change Password">
+    <br>
+    <br>
     <label for="file" class="label">Change Profile Picture</label>
     <br>
     <input type="file" id="file" name="file" />
     <br>
-    <input type="submit" class="btn" value="Submit" />
+    <br>
+    <label for="filter" class="label">Content Filter</label>
+    <br>
+    <!-- Rounded switch -->
+    <label class="switch">
+      <input type="checkbox" id="filter" name="filter">
+      <span class="slider"></span>
+    </label>
+    <br>
+    <br>
+    <label for="privacy" class="label">Change Privacy Setting</label>
+    <select name="privacy" id="privacy" name="privacy">
+      <option value="Public">Public</option>
+      <option value="Private">Private</option>
+    </select>
+    <br>
+    <br>
+    </div>
+    <div style="padding: 20px;">
+        <label for="bio"class="label" >Bio</label>
+        <br>
+        <textarea style="resize: none" id="bio" name="bio" rows="8" cols="25"></textarea>
+        <br>
+        <br>
+        <input type="submit" class="btn" value="Save Changes">
+        <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    </div>
+
+
 </form>
+
 <script src="static/getimage.js"></script>
 {% endif %}
 {%endblock%}

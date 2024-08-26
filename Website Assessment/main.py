@@ -391,10 +391,16 @@ def addpost():
 
     return render_template('addpost.html') #currently does not exist, will be added later
 @app.route('/uploader', methods = ['GET', 'POST'])
-def upload_file():
+def reload_settings():
     if request.method == 'POST':
-        f = request.files['file']
-        f.save(f"static/temp_image.jpg")
+        if request.form['username']: uname = request.form['username']
+        if request.form['email']: email = request.form['email']
+        if request.form['password']: pword = request.form['password']
+        if request.form['filter']: filter = request.form['filter']
+        if request.form['privacy']: privacy = request.form['privacy']
+        if request.form['bio']: bio = request.form['bio']
+        if request.files['file']: file = request.files['file']
+        file.save(f"static/temp_image.jpg")
         with open('static/temp_image.jpg', 'rb') as f:
             # Convert to Base64 for easy transfer
             image_data = str(base64.b64encode(f.read()))
