@@ -230,7 +230,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "ON")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "True")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -385,30 +385,62 @@ def unsubscribe(username):  # Serves as a reload of the userpage but removing th
     return redirect(url_for("userpage", username=username))
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    return render_template('settings.html')
-@app.route('/newpost',methods=['GET', 'POST'])
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    c = cursor.execute(f'SELECT [Content Filter] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    filter = str(c.fetchone()).strip("(' ',)")
+    return render_template('settings.html', filter=filter)
+@app.route('/newpost', methods=['GET', 'POST'])
 def addpost():
 
-    return render_template('addpost.html') #currently does not exist, will be added later
-@app.route('/uploader', methods = ['GET', 'POST'])
+    return render_template('addpost.html')  # currently does not exist, will be added later
+@app.route('/uploader', methods=['GET', 'POST'])
 def reload_settings():
     if request.method == 'POST':
-        if request.form['username']: uname = request.form['username']
-        if request.form['email']: email = request.form['email']
-        if request.form['password']: pword = request.form['password']
-        if request.form['filter']: filter = request.form['filter']
-        if request.form['privacy']: privacy = request.form['privacy']
-        if request.form['bio']: bio = request.form['bio']
-        if request.files['file']: file = request.files['file']
-        file.save(f"static/temp_image.jpg")
-        with open('static/temp_image.jpg', 'rb') as f:
-            # Convert to Base64 for easy transfer
-            image_data = str(base64.b64encode(f.read()))
-        os.remove("static/temp_image.jpg")
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
-        cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}" WHERE Username = "{session["username"]}"' )
+        if request.form['username']:
+            uname = request.form['username']
+            session['username'] = uname
+        else:
+            uname = session['username']
+        if request.form['email']:
+            email = request.form['email']
+        else:
+            c = cursor.execute(f'SELECT Email FROM tUsers WHERE Username = "{uname}"')
+            email = str(c.fetchone()).strip("(' ',)")
+        if request.form['password']:
+            pword = request.form['password']
+        else:
+            c = cursor.execute(f'SELECT Password FROM tUsers WHERE [Username] = "{uname}"')
+            pword = str(c.fetchone()).strip("(' ',)")
+        if 'filter' not in request.form:
+            filter = False
+        else:
+            c = cursor.execute(f'SELECT [Content Filter] FROM tUsers WHERE [Username] = "{uname}"')
+            filter = str(c.fetchone()).strip("(' ',)")
+        if request.form['privacy']:
+            privacy = request.form['privacy']
+        else:
+            c = cursor.execute(f'SELECT Privacy FROM tUsers WHERE [Username] = "{uname}"')
+            privacy = str(c.fetchone()).strip("(' ',)")
+        if request.form['bio']:
+            bio = request.form['bio']
+        else:
+            c = cursor.execute(f'SELECT Bio FROM tUsers WHERE [Username] = "{uname}"')
+            bio = str(c.fetchone()).strip("(' ',)")
+        if request.files['file']:
+            file = request.files['file']
+            file.save(f"static/temp_image.jpg")
+            with open('static/temp_image.jpg', 'rb') as f:
+                # Convert to Base64 for easy transfer
+                image_data = str(base64.b64encode(f.read()))
+            os.remove("static/temp_image.jpg")
+            cursor.execute(f'UPDATE tUsers SET Username = "{uname}", Email = "{email}", Password = "{pword}", [Content Filter] = "{filter}", Privacy = "{privacy}", [ProfileImage] = "{image_data}", Bio = "{bio}" WHERE Username = "{session["username"]}"')
+        else:
+            cursor.execute(f'UPDATE tUsers SET Username = "{uname}", Email = "{email}", Password = "{pword}", [Content Filter] = "{filter}", Privacy = "{privacy}", Bio = "{bio}" WHERE Username = "{session["username"]}"')
         db.commit()
         return render_template('settings.html')
 # Run the app
