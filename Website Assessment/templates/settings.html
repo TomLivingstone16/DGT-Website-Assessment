@@ -42,22 +42,38 @@
     <label for="filter" class="label">Content Filter</label>
     <br>
     <!-- Rounded switch -->
-    <label class="switch">
-      <input type="checkbox" id="filter" name="filter" checked="{{filter}}">
-      <span class="slider"></span>
-    </label>
+    {% if prechecked == "True" %}
+        <label class="switch">
+            <input type="checkbox" id="filter" name="filter" checked>
+            <span class="slider"></span>
+        </label>
+    {% endif %}
+    {% if prechecked == "False" %}
+        <label class="switch">
+            <input type="checkbox" id="filter" name="filter">
+            <span class="slider"></span>
+        </label>
+    {% endif %}
     <br>
     <br>
     <label for="privacy" class="label">Change Privacy Setting</label>
-    <select name="privacy" id="privacy" name="privacy">
-      <option value="Public">Public</option>
+    {% if privacy == "Public" %}
+    <select name="privacy" id="privacy">
+      <option selected value="Public">Public</option>
       <option value="Private">Private</option>
     </select>
+    {% endif %}
+    {% if privacy == "Private" %}
+    <select name="privacy" id="privacy">
+      <option value="Public">Public</option>
+      <option selected value="Private">Private</option>
+    </select>
+    {% endif %}
     <br>
     <br>
     </div>
     <div style="padding: 20px;">
-        <label for="bio"class="label" >Bio</label>
+        <label for="bio" class="label" >Bio</label>
         <br>
         <textarea style="resize: none" id="bio" name="bio" rows="8" cols="25"></textarea>
         <br>

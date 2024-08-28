@@ -4,6 +4,7 @@ import re
 import base64
 import os
 
+
 def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
@@ -158,7 +159,7 @@ def home():
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
-    c = cursor.execute(sql)
+    c = cursor.execute(sql) 
     rows = c.fetchall()
     db.close()
 
@@ -167,6 +168,7 @@ def home():
         return e[4]
     # Sort the rows so the highest are at the front
     rows.sort(reverse=True, key=sort_func)
+
     top1 = rows[0]
     top2 = rows[1]
     top3 = rows[2]
@@ -185,10 +187,8 @@ def home():
     # Sort function
     def sort_func(e):
         return e[4]
-    print(posts[0])
     # Sort the rows so the highest are at the front
     posts.sort(reverse=True, key=sort_func)
-    print(posts[0][1])
     topPost1 = return_image(posts[0][3], posts[0][1])
     topPost2 = return_image(posts[1][3], posts[1][1])
     topPost3 = return_image(posts[2][3], posts[2][1])
@@ -230,7 +230,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "True")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "True", "")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -385,12 +385,16 @@ def unsubscribe(username):  # Serves as a reload of the userpage but removing th
     return redirect(url_for("userpage", username=username))
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
+    delete_image_files()
+    delete_post_files()
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     c = cursor.execute(f'SELECT [Content Filter] FROM tUsers WHERE [Username] = "{session["username"]}"')
     filter = str(c.fetchone()).strip("(' ',)")
-    return render_template('settings.html', filter=filter)
+    c = cursor.execute(f'SELECT [Privacy] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    privacy = str(c.fetchone()).strip("(' ',)")
+    return render_template('settings.html', prechecked=filter, privacy=privacy)
 @app.route('/newpost', methods=['GET', 'POST'])
 def addpost():
 
@@ -403,34 +407,31 @@ def reload_settings():
         cursor = db.cursor()
         if request.form['username']:
             uname = request.form['username']
+            cursor.execute(
+                f'UPDATE tUsers SET [Username] = "{uname}" WHERE Username = "{session["username"]}"')
             session['username'] = uname
-        else:
-            uname = session['username']
         if request.form['email']:
             email = request.form['email']
-        else:
-            c = cursor.execute(f'SELECT Email FROM tUsers WHERE Username = "{uname}"')
-            email = str(c.fetchone()).strip("(' ',)")
+            cursor.execute(
+                f'UPDATE tUsers SET [Email] = "{email}" WHERE Username = "{session["username"]}"')
         if request.form['password']:
             pword = request.form['password']
-        else:
-            c = cursor.execute(f'SELECT Password FROM tUsers WHERE [Username] = "{uname}"')
-            pword = str(c.fetchone()).strip("(' ',)")
+            cursor.execute(f'UPDATE tUsers SET [Password] = "{pword}" WHERE Username = "{session["username"]}"')
+
         if 'filter' not in request.form:
             filter = False
         else:
-            c = cursor.execute(f'SELECT [Content Filter] FROM tUsers WHERE [Username] = "{uname}"')
-            filter = str(c.fetchone()).strip("(' ',)")
+            filter = True
+        cursor.execute(
+            f'UPDATE tUsers SET [Content Filter] = "{filter}" WHERE Username = "{session["username"]}"')
         if request.form['privacy']:
             privacy = request.form['privacy']
-        else:
-            c = cursor.execute(f'SELECT Privacy FROM tUsers WHERE [Username] = "{uname}"')
-            privacy = str(c.fetchone()).strip("(' ',)")
+            cursor.execute(
+                f'UPDATE tUsers SET [Privacy] = "{privacy}" WHERE Username = "{session["username"]}"')
         if request.form['bio']:
             bio = request.form['bio']
-        else:
-            c = cursor.execute(f'SELECT Bio FROM tUsers WHERE [Username] = "{uname}"')
-            bio = str(c.fetchone()).strip("(' ',)")
+            cursor.execute(
+                f'UPDATE tUsers SET [Bio] = "{bio}" WHERE Username = "{session["username"]}"')
         if request.files['file']:
             file = request.files['file']
             file.save(f"static/temp_image.jpg")
@@ -438,11 +439,9 @@ def reload_settings():
                 # Convert to Base64 for easy transfer
                 image_data = str(base64.b64encode(f.read()))
             os.remove("static/temp_image.jpg")
-            cursor.execute(f'UPDATE tUsers SET Username = "{uname}", Email = "{email}", Password = "{pword}", [Content Filter] = "{filter}", Privacy = "{privacy}", [ProfileImage] = "{image_data}", Bio = "{bio}" WHERE Username = "{session["username"]}"')
-        else:
-            cursor.execute(f'UPDATE tUsers SET Username = "{uname}", Email = "{email}", Password = "{pword}", [Content Filter] = "{filter}", Privacy = "{privacy}", Bio = "{bio}" WHERE Username = "{session["username"]}"')
+            cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}" WHERE Username = "{session["username"]}"')
         db.commit()
-        return render_template('settings.html')
+        return redirect(url_for("settings"))
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
