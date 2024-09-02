@@ -149,9 +149,9 @@ def home():
             row_true = rows[0]
             profile_pic = get_profile_picture(row_true[1])
             # Return the combo view page
-            return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True)
+            return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True,loggedIn = session["loggedIn"])
         except:  # If we don't have results, send through negative responses
-            return render_template('results.html', results=False)
+            return render_template('results.html', results=False,loggedIn = session["loggedIn"])
     delete_post_files()  # Remove post files just in case
     # Grab top 3 accounts to display/idolize/etc.
     # Select all accounts
@@ -168,6 +168,7 @@ def home():
         return e[4]
     # Sort the rows so the highest are at the front
     rows.sort(reverse=True, key=sort_func)
+    print(len(rows))
 
     top1 = rows[0]
     top2 = rows[1]
@@ -277,10 +278,10 @@ def login():
             msg = 'Incorrect username / password !'
     # Return login page
     return render_template('login.html', msg=msg)
-@app.route('/logout')
+@app.route('/*')
 def logout():
     # Remove everything
-    session.pop('loggedin', None)
+    session['loggedIn'] = False
     session.pop('id', None)
     session.pop('username', None)
     # Go to the home page
@@ -396,9 +397,10 @@ def settings():
     privacy = str(c.fetchone()).strip("(' ',)")
     return render_template('settings.html', prechecked=filter, privacy=privacy)
 @app.route('/newpost', methods=['GET', 'POST'])
-def addpost():
-
-    return render_template('addpost.html')  # currently does not exist, will be added later
+def add_post():
+    delete_image_files()
+    delete_post_files()
+    return render_template('addpost.html', loggedIn = session['loggedIn'])
 @app.route('/uploader', methods=['GET', 'POST'])
 def reload_settings():
     if request.method == 'POST':
@@ -442,6 +444,13 @@ def reload_settings():
             cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}" WHERE Username = "{session["username"]}"')
         db.commit()
         return redirect(url_for("settings"))
+@app.route('/poster', methods=['GET', 'POST'])
+def new_post():
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    #PRETEND THiS POSTS ; CONTINUE WORKING LATER
+    return redirect(url_for("userpage", username=session["username"]))
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

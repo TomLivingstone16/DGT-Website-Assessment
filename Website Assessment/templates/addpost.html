@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>New Post</title>
+</head>
+
+{% extends "base.html" %}
+{% block content %}
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--nav-->
+            <ul>
+                <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
+                <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
+            </ul>
+{% endif %}
+<form action="{{url_for('new_post')}}" method="post" enctype="multipart/form-data">
+    <div style="padding: 20px">
+        <label for="file" class="label">Import Image</label>
+        <br>
+        <input type="file" id="file" name="file" />
+        <br>
+        <br>
+        <label for="name" class="label">Post Name</label>
+        <br>
+        <input id="name" name="name" type="text" placeholder="Enter Post Name" >
+        <br>
+        <br>
+        <label for="bio" class="label" >Post Description</label>
+        <br>
+        <textarea style="resize: none" id="bio" name="bio" rows="8" cols="25" placeholder="Enter Post Description"></textarea>
+        <br>
+        <br>
+        <input type="submit" class="btn" value="Post">
+    </div>
+</form>
+{%endblock%}

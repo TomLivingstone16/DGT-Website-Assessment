@@ -16,7 +16,7 @@
     <!--Nav-->
         {% if loggedInUser == username %}
             <ul>
-            <li><a class="userpageButtons" href="{{url_for('addpost')}}">Post</a></li>
+            <li><a class="userpageButtons" href="{{url_for('add_post')}}">Post</a></li>
             <li><a class="userpageButtons" href="{{url_for('settings')}}">Settings</a></li>
             </ul>
         {%else%}
