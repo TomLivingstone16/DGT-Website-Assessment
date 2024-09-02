@@ -149,9 +149,9 @@ def home():
             row_true = rows[0]
             profile_pic = get_profile_picture(row_true[1])
             # Return the combo view page
-            return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True,loggedIn = session["loggedIn"])
+            return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=session["loggedin"])
         except:  # If we don't have results, send through negative responses
-            return render_template('results.html', results=False,loggedIn = session["loggedIn"])
+            return render_template('results.html', results=False, loggedIn=session["loggedin"])
     delete_post_files()  # Remove post files just in case
     # Grab top 3 accounts to display/idolize/etc.
     # Select all accounts
@@ -323,7 +323,7 @@ def userpage(username):
         subscribed = False  # Since there's no user, we can't be subscribed anyway
 
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed)
+    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed, )
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
 def subscribe(username):  # Serves as a reload of the userpage but adding the subscription
     # Check if logged in, for safety reasons
@@ -400,7 +400,7 @@ def settings():
 def add_post():
     delete_image_files()
     delete_post_files()
-    return render_template('addpost.html', loggedIn = session['loggedIn'])
+    return render_template('addpost.html', loggedIn=session['loggedin'])
 @app.route('/uploader', methods=['GET', 'POST'])
 def reload_settings():
     if request.method == 'POST':
@@ -436,7 +436,7 @@ def reload_settings():
                 f'UPDATE tUsers SET [Bio] = "{bio}" WHERE Username = "{session["username"]}"')
         if request.files['file']:
             file = request.files['file']
-            file.save(f"static/temp_image.jpg")
+            file.save("static/temp_image.jpg")
             with open('static/temp_image.jpg', 'rb') as f:
                 # Convert to Base64 for easy transfer
                 image_data = str(base64.b64encode(f.read()))
@@ -449,7 +449,14 @@ def new_post():
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
-    #PRETEND THiS POSTS ; CONTINUE WORKING LATER
+    file = request.files['file']
+    file.save("static/temp_image.jpg")
+    with open('static/temp_image.jpg', 'rb') as f:
+        # Convert to Base64 for easy transfer
+        image_data = str(base64.b64encode(f.read()))
+    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}")')
+    db.commit()
+    os.remove("static/temp_image.jpg")
     return redirect(url_for("userpage", username=session["username"]))
 # Run the app
 if __name__ == "__main__":

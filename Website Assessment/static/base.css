@@ -253,3 +253,7 @@ input:checked + .slider:before {
     float: left;
     padding: 20px;
 }
+
+.slideImg {
+    height : 500px
+}
