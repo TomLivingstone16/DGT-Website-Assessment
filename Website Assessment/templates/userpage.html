@@ -35,14 +35,33 @@
         <h2>{{username}}</h2>
         <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
         <h2 class="followerCount">{{followerCount}} Followers</h2>
+        <p style="width:325px; margin-left: 25px">{{bio}}</p>
     </div>
-        <div style="padding-left: 400px">
+
         {% for i in range (0, len)%}
-        <img class="post" src="{{url_for('static',filename=post[i])}}">
-        <p>pretend this description is what's actually written for now </p>
-            <button><i class="fa fa-heart"></i> Like</button> <!--No effect for now-->
+        <div class="post">
+            <h3 style="padding:10px">{{title[i][0]}}</h3>
+            <img src="{{url_for('static',filename=post[i])}}">
+            <p style="padding:10px">{{desc[i][0]}}</p>
+            <button style="margin:10px"><i class="fa fa-heart"></i> {{likes[i][0]}}</button> <!--No effect for now-->
+        </div>
     {% endfor %}
-    </div>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+
 
 
 

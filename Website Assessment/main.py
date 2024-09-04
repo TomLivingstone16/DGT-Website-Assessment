@@ -297,8 +297,15 @@ def userpage(username):
     cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"')
     user = cursor.fetchone()
     profile_picture = get_profile_picture(user[1])  # Get user profile pic
+    bio = user[8]
     # Get all posts
     image = return_all_posts(username)
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'")
+    likes = (cursor.fetchall())
+    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}'")
+    desc = (cursor.fetchall())
+    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}'")
+    title = (cursor.fetchall())
     # Check if logged in
     loggedIn = False
     try:
@@ -323,7 +330,7 @@ def userpage(username):
         subscribed = False  # Since there's no user, we can't be subscribed anyway
 
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed, )
+    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed, likes=likes, desc=desc, title=title, bio=bio)
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
 def subscribe(username):  # Serves as a reload of the userpage but adding the subscription
     # Check if logged in, for safety reasons

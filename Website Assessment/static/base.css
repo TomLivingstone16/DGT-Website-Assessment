@@ -111,7 +111,12 @@ position: fixed;
 }
 
 .post {
+  box-shadow: 5px 5px 5px rgba(0,0,0,0.2);
   width:500px;
+  display: inline-block;
+  background-color: #25CED1;
+  border-radius: 25px;
+  margin: 10px;
 }
 
 img {
