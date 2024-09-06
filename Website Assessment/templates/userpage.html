@@ -43,7 +43,12 @@
             <h3 style="padding:10px">{{title[i][0]}}</h3>
             <img src="{{url_for('static',filename=post[i])}}">
             <p style="padding:10px">{{desc[i][0]}}</p>
-            <button style="margin:10px"><i class="fa fa-heart"></i> {{likes[i][0]}}</button> <!--No effect for now-->
+            <form action="{{url_for('like_post')}}" method="post">
+                <input type="submit" style="margin:10px" value="Like"><i class="fa fa-heart"></i> {{likes[i][0]}}</input>
+                <input name="user" class="hidden" type="text" value="{{loggedInUser}}">
+                <input name="post" class="hidden" type="text" value="{{title[i][0]}}">
+                <input name="returnpage" class="hidden" type="text" value="{{username}}">
+            </form>
         </div>
     {% endfor %}
             <br>

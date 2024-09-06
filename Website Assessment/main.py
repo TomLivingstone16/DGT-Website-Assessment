@@ -465,6 +465,28 @@ def new_post():
     db.commit()
     os.remove("static/temp_image.jpg")
     return redirect(url_for("userpage", username=session["username"]))
+@app.route('/like', methods=['GET','POST'])
+def like_post():
+    username = request.form["user"]
+    post = request.form["post"]
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    cursor.execute(f'SELECT * FROM tStoredLikes WHERE Username = "{username}" AND PostName = "{post}"')
+    f = cursor.fetchone()
+    if f == None:
+        # Insert into subscriptions table
+        cursor.execute(f'INSERT INTO tStoredLikes VALUES (NULL,"{username}","{post}")')
+        db.commit()
+        # Get Follower count and convert from tuple to integer
+        likeCount = cursor.execute(f"SELECT Likes FROM tPosts WHERE PostName  = '{post}'")
+        likeInt = int(str(likeCount.fetchone()).strip("( ),")) + 1
+        # Update tUsers to add 1 to followerCount
+        cursor.execute(f"UPDATE tPosts SET Likes = {likeInt} WHERE PostName = '{post}'")
+        db.commit()
+        db.close()
+    return redirect(url_for("userpage", username=request.form["returnpage"]))
+
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

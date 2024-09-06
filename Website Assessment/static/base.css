@@ -117,6 +117,7 @@ position: fixed;
   background-color: #25CED1;
   border-radius: 25px;
   margin: 10px;
+
 }
 
 img {
@@ -261,4 +262,8 @@ input:checked + .slider:before {
 
 .slideImg {
     height : 500px
+}
+
+.hidden {
+    visibility: hidden;
 }
