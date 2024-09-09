@@ -262,7 +262,20 @@ def login():
             cursor = db.cursor()
             c = cursor.execute(sql)
             rows = c.fetchall()
+            sql = "SELECT * FROM 'tPosts'"
+            c = cursor.execute(sql)
+            posts = c.fetchall()
             db.close()
+
+            # Sort function
+            def sort_func(e):
+                return e[4]
+
+            # Sort the rows so the highest are at the front
+            posts.sort(reverse=True, key=sort_func)
+            topPost1 = return_image(posts[0][3], posts[0][1])
+            topPost2 = return_image(posts[1][3], posts[1][1])
+            topPost3 = return_image(posts[2][3], posts[2][1])
 
             def sort_func(e):
                 return e[4]
@@ -274,7 +287,7 @@ def login():
             prof1 = get_profile_picture(top1[1])
             prof2 = get_profile_picture(top2[1])
             prof3 = get_profile_picture(top3[1])
-            return render_template('index.html', msg=msg, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3)
+            return render_template('index.html', msg=msg, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)
         else:  # If username/password is wrong/doesn't exist
             msg = 'Incorrect username / password !'
     # Return login page
@@ -486,7 +499,8 @@ def like_post():
         cursor.execute(f"UPDATE tPosts SET Likes = {likeInt} WHERE PostName = '{post}'")
         db.commit()
         db.close()
-    return redirect(url_for("userpage", username=request.form["returnpage"]))
+    print(request.form['returnpage'])
+    return redirect(url_for(request.form['endpoint'], username=request.form["returnpage"], postname=request.form['post']))
 @app.route('/page/<username>/post/<postname>', methods=['GET', 'POST'])
 def postpage(username, postname):
     delete_image_files()  # Remove all profile pics
@@ -511,10 +525,24 @@ def postpage(username, postname):
         print("Nothing happens here")
     if loggedIn:
         loggedInUser = session['username']
+        # Check if we're subscribed
+        var = cursor.execute(
+            f'SELECT * FROM tSubscriptions WHERE [Subscriber] = "{loggedInUser}" AND [To Which User] = "{username}"')
+        db.commit()
+        isSubscribed = var.fetchone()
+        if isSubscribed is None:
+            subscribed = False
+        else:
+            subscribed = True
+        # The page we're going to is ours, so make sure we know that
     else:
         loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
-    return render_template('post.html', postImg=postImg, title=title, likes=likes, desc=desc, loggedInUser=loggedInUser,username=username)
+        subscribed = False  # Since there's no user, we can't be subscribed anyway
 
+    return render_template('post.html', postImg=postImg, title=title, likes=likes, desc=desc, loggedInUser=loggedInUser, username=username, subscribed=subscribed, loggedIn=loggedIn)
+@app.route('/deletepost', methods=['GET', 'POST'])
+def delete_post(username,postname):
+    print("x")
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

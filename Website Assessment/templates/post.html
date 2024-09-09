@@ -16,8 +16,8 @@
     <!--Nav-->
         {% if loggedInUser == username %}
             <ul>
-            <li><a class="userpageButtons" href="{{url_for('add_post')}}">Post</a></li>
-            <li><a class="userpageButtons" href="{{url_for('settings')}}">Settings</a></li>
+            <li><a class="userpageButtons" href="{{url_for('delete_post')}}" style="width:100px">Delete</a></li>
+            <li><a class="userpageButtons" href="{{url_for('settings')}}" style="width:100px"><i class="fa fa-gear"></i></a></li>
             </ul>
         {%else%}
             {% if subscribed == False %}
@@ -31,7 +31,7 @@
             {%endif%}
         {%endif%}
 {% endif %}
-<div class="post">
+<div class="post" style="margin:auto; width:50%">
     <h3 style="padding:10px">{{title[0][0]}}</h3>
     <img src="{{url_for('static',filename=postImg)}}">
     <p style="padding:10px">{{desc[0][0]}}</p>
@@ -40,8 +40,13 @@
         <input name="user" class="hidden" type="text" value="{{loggedInUser}}">
         <input name="post" class="hidden" type="text" value="{{title[0][0]}}">
         <input name="returnpage" class="hidden" type="text" value="{{username}}">
+        <input name="endpoint" class="hidden" type="text" value="postpage">
     </form>
 
 
 </div>
+
+<ul style="width: 154px">
+    <li><a href="{{url_for('userpage', username=username)}}">Back to Page</a></li>
+</ul>
 {%endblock%}
