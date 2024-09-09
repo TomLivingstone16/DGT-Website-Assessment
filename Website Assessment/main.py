@@ -125,6 +125,7 @@ def execute_sql(sql, val):  # Unused but here as a reference template for sql ex
     else:
         cursor.execute(sql)
         db.commit()
+
 # Define the app
 app = Flask(__name__)
 
@@ -465,7 +466,7 @@ def new_post():
     db.commit()
     os.remove("static/temp_image.jpg")
     return redirect(url_for("userpage", username=session["username"]))
-@app.route('/like', methods=['GET','POST'])
+@app.route('/like', methods=['GET', 'POST'])
 def like_post():
     username = request.form["user"]
     post = request.form["post"]
@@ -474,7 +475,7 @@ def like_post():
     cursor = db.cursor()
     cursor.execute(f'SELECT * FROM tStoredLikes WHERE Username = "{username}" AND PostName = "{post}"')
     f = cursor.fetchone()
-    if f == None:
+    if f is None:
         # Insert into subscriptions table
         cursor.execute(f'INSERT INTO tStoredLikes VALUES (NULL,"{username}","{post}")')
         db.commit()
@@ -486,6 +487,33 @@ def like_post():
         db.commit()
         db.close()
     return redirect(url_for("userpage", username=request.form["returnpage"]))
+@app.route('/page/<username>/post/<postname>', methods=['GET', 'POST'])
+def postpage(username, postname):
+    delete_image_files()  # Remove all profile pics
+    delete_post_files()  # Remove all post files, the one we need will be added later
+    print(f"{username} : {postname}")
+    postImg = return_image(postname, username)
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    likes = (cursor.fetchall())
+    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    desc = (cursor.fetchall())
+    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    title = (cursor.fetchall())
+    loggedIn = False
+    try:
+        if session['loggedin']:
+            print(session['username'])
+            loggedIn = True
+    except:
+        print("Nothing happens here")
+    if loggedIn:
+        loggedInUser = session['username']
+    else:
+        loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
+    return render_template('post.html', postImg=postImg, title=title, likes=likes, desc=desc, loggedInUser=loggedInUser,username=username)
 
 # Run the app
 if __name__ == "__main__":

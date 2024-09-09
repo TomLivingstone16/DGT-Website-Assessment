@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Home</title>
+</head>
+
+{% extends "base.html" %}
+{% block content %}
+{% if loggedIn == False %}
+        <!--nav-->
+        <ul>
+            <li><a href="{{url_for('login')}}">Login</a></li>
+            <li><a href="{{url_for('signup')}}">Signup</a></li>
+        </ul>
+    {% else %}
+    <!--Nav-->
+        {% if loggedInUser == username %}
+            <ul>
+            <li><a class="userpageButtons" href="{{url_for('add_post')}}">Post</a></li>
+            <li><a class="userpageButtons" href="{{url_for('settings')}}">Settings</a></li>
+            </ul>
+        {%else%}
+            {% if subscribed == False %}
+            <ul class="subscribeButton">
+                <li><a href="{{url_for('subscribe', username=username)}}" >Subscribe <i class="fa fa-star"></i></a></li>
+            </ul>
+            {%else%}
+                <ul class="unsubscribeButton">
+                <li><a href="{{url_for('unsubscribe', username=username)}}" >Unsubscribe <i class="fa fa-star"></i></a></li>
+            </ul>
+            {%endif%}
+        {%endif%}
+{% endif %}
+<div class="post">
+    <h3 style="padding:10px">{{title[0][0]}}</h3>
+    <img src="{{url_for('static',filename=postImg)}}">
+    <p style="padding:10px">{{desc[0][0]}}</p>
+    <form action="{{url_for('like_post')}}" method="post">
+        <input type="submit" style="margin:10px" value="Like"><i class="fa fa-heart"></i> {{likes[0][0]}}
+        <input name="user" class="hidden" type="text" value="{{loggedInUser}}">
+        <input name="post" class="hidden" type="text" value="{{title[0][0]}}">
+        <input name="returnpage" class="hidden" type="text" value="{{username}}">
+    </form>
+
+
+</div>
+{%endblock%}
