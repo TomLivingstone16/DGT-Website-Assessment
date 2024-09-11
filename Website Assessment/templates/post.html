@@ -16,7 +16,7 @@
     <!--Nav-->
         {% if loggedInUser == username %}
             <ul>
-            <li><a class="userpageButtons" href="{{url_for('delete_post')}}" style="width:100px">Delete</a></li>
+            <li><a class="userpageButtons" href="{{ url_for('delete_post', username=username, postname=title[0][0]) }}" style="width:100px">Delete</a></li>
             <li><a class="userpageButtons" href="{{url_for('settings')}}" style="width:100px"><i class="fa fa-gear"></i></a></li>
             </ul>
         {%else%}
@@ -41,10 +41,16 @@
         <input name="post" class="hidden" type="text" value="{{title[0][0]}}">
         <input name="returnpage" class="hidden" type="text" value="{{username}}">
         <input name="endpoint" class="hidden" type="text" value="postpage">
+        <br>
+        <br>
     </form>
 
 
 </div>
+
+
+
+
 
 <ul style="width: 154px">
     <li><a href="{{url_for('userpage', username=username)}}">Back to Page</a></li>

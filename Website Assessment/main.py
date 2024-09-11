@@ -4,7 +4,6 @@ import re
 import base64
 import os
 
-
 def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
@@ -540,9 +539,32 @@ def postpage(username, postname):
         subscribed = False  # Since there's no user, we can't be subscribed anyway
 
     return render_template('post.html', postImg=postImg, title=title, likes=likes, desc=desc, loggedInUser=loggedInUser, username=username, subscribed=subscribed, loggedIn=loggedIn)
-@app.route('/deletepost', methods=['GET', 'POST'])
-def delete_post(username,postname):
-    print("x")
+@app.route('/page/<username>/post/<postname>/delete', methods=['GET', 'POST'])
+def delete_post(username, postname):
+    delete_image_files()  # Remove all profile pics
+    delete_post_files()  # Remove all post files, the one we need will be added later
+    print(f"{username} : {postname}")
+    postImg = return_image(postname, username)
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    likes = (cursor.fetchall())
+    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    desc = (cursor.fetchall())
+    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    title = (cursor.fetchall())
+    return render_template("delete.html", username=username, postname=postname, likes=likes, desc=desc, title=title, postImg=postImg)
+@app.route('/deleter/<username>/<postname>', methods=['GET', 'POST'])
+def delete(username, postname):
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    cursor.execute(
+        f'DELETE FROM tPosts WHERE Username = "{username}" AND PostName = "{postname}"')
+    db.commit()
+    os.remove(f"static/{postname}_{username}.jpg")
+    return redirect(url_for("userpage", username=username))
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
