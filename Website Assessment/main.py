@@ -3,34 +3,36 @@ import sqlite3
 import re
 import base64
 import os
+from datetime import datetime
 
 def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
     return image_data
-def return_image(image_name, username):  # Returns image from user posts
-    # Connect to database
-    DATABASE = "database.db"
-    db = sqlite3.connect(DATABASE)
-    cursor = db.cursor()
-    # Get image data from posts table.
-    query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
-    c = cursor.execute(query)
-    image_data = c.fetchone()
-    # Convert the data from tuple to a byte
-    file = str(image_data).strip('(" ",)')
-    finalFile = file.strip("b' '")
-    # Decode the file
-    blob = base64.b64decode(finalFile)
-    # Create a new image file with the data from the blob
-    img_file = open("static/" + image_name + "_" + username + ".jpg", 'wb')
-    img_file.write(blob)
-    img_file.close()
+def return_image(image_name, username, userFilterOn):  # Returns image from user posts
 
-    print("Image retrieved and written to file.")
-    # Name and return the image. Stores in /static/.
-    return image_name+"_"+username + ".jpg"
+        # Connect to database
+        DATABASE = "database.db"
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        # Get image data from posts table.
+        query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
+        c = cursor.execute(query)
+        image_data = c.fetchone()
+        # Convert the data from tuple to a byte
+        file = str(image_data).strip('(" ",)')
+        finalFile = file.strip("b' '")
+        # Decode the file
+        blob = base64.b64decode(finalFile)
+        # Create a new image file with the data from the blob
+        img_file = open("static/" + image_name + "_" + username + ".jpg", 'wb')
+        img_file.write(blob)
+        img_file.close()
+
+        print("Image retrieved and written to file.")
+        # Name and return the image. Stores in /static/.
+        return image_name+"_"+username + ".jpg"
 def return_all_posts(username):  # Returns all posts from a user's page
     # Connect to database
     DATABASE = "database.db"
@@ -41,10 +43,12 @@ def return_all_posts(username):  # Returns all posts from a user's page
     c = cursor.execute(query)
     images = c.fetchall()
     imageList = []
+    c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+    userFilterOn = str(c.fetchone()).strip("(' ',)")
     # Loop through each image in the query
     for i in range(len(images)):
         # Add the current image to the ImageList list, using return_image to convert
-        imageList.append(return_image(str(images[i]).strip("(' ',)"), username))
+        imageList.append(return_image(str(images[i]).strip("(' ',)"), username, userFilterOn))
     # Return all the images in the list
     return imageList
 def delete_image_files():  # For cleanup. Removes profile images from static/ when not in use
@@ -170,29 +174,36 @@ def home():
     rows.sort(reverse=True, key=sort_func)
     print(len(rows))
 
-    top1 = rows[0]
-    top2 = rows[1]
-    top3 = rows[2]
+
     # Get profile pics of top accounts
-    prof1 = get_profile_picture(top1[1])
-    prof2 = get_profile_picture(top2[1])
-    prof3 = get_profile_picture(top3[1])
+    prof1 = get_profile_picture(rows[0][1])
+    prof2 = get_profile_picture(rows[1][1])
+    prof3 = get_profile_picture(rows[2][1])
 
     sql = "SELECT * FROM 'tPosts'"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     c = cursor.execute(sql)
     posts = c.fetchall()
+    c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+    userFilterOn = str(c.fetchone()).strip("(' ',)")
+    print(f"LEN: {len(posts)}")
+    topPosts = []
+    for i in range(len(posts)):
+        print(posts[i][6])
+        if rows[i][6] == False:
+            topPosts.append(posts[i])
+            print(f"YES: {posts[i][3]}")
+        print("yes this loop is working")
     db.close()
-
     # Sort function
     def sort_func(e):
         return e[4]
     # Sort the rows so the highest are at the front
     posts.sort(reverse=True, key=sort_func)
-    topPost1 = return_image(posts[0][3], posts[0][1])
-    topPost2 = return_image(posts[1][3], posts[1][1])
-    topPost3 = return_image(posts[2][3], posts[2][1])
+    topPost1 = return_image(posts[0][3], posts[0][1],userFilterOn)
+    topPost2 = return_image(posts[1][3], posts[1][1],userFilterOn)
+    topPost3 = return_image(posts[2][3], posts[2][1], userFilterOn)
     # Check if we're logged in or not
     loggedIn = False
     try:
@@ -204,7 +215,7 @@ def home():
         print("Nothing happens here")
 
     # Return the index page
-    return render_template('index.html', loggedIn=loggedIn, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)  # Return index page
+    return render_template('index.html', loggedIn=loggedIn, top1=rows[0], top2=rows[1], top3=rows[2], prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)  # Return index page
 # Log In system
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -219,6 +230,7 @@ def signup():
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
+        age = 0
         cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"', )
         account = cursor.fetchone()
         if account:  # If the account is already in use
@@ -231,7 +243,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "True", "")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "{age}" "True", "")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -310,7 +322,7 @@ def userpage(username):
     cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"')
     user = cursor.fetchone()
     profile_picture = get_profile_picture(user[1])  # Get user profile pic
-    bio = user[8]
+    bio = user[9]
     # Get all posts
     image = return_all_posts(username)
     cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'")
@@ -415,7 +427,16 @@ def settings():
     filter = str(c.fetchone()).strip("(' ',)")
     c = cursor.execute(f'SELECT [Privacy] FROM tUsers WHERE [Username] = "{session["username"]}"')
     privacy = str(c.fetchone()).strip("(' ',)")
-    return render_template('settings.html', prechecked=filter, privacy=privacy)
+    c = cursor.execute(f'SELECT [Birthday] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    userBday = str(c.fetchone()).strip("(' ',)")
+    dateParts = userBday.split("-")
+    year = int(dateParts[0])
+    month = int(dateParts[1])
+    day = int(dateParts[2])
+    date = datetime(year,month,day)
+    print(date)
+    ageLock = (date.date() < datetime.today().date())
+    return render_template('settings.html', prechecked=filter, privacy=privacy, ageLock=ageLock)
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_post():
     delete_image_files()

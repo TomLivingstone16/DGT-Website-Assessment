@@ -39,23 +39,25 @@
     <input type="file" id="file" name="file" />
     <br>
     <br>
-    <label for="filter" class="label">Content Filter</label>
+    {% if ageLock == "False" %}
+        <label for="filter" class="label">Content Filter</label>
+        <br>
+        <!-- Rounded switch -->
+        {% if prechecked == "True" %}
+            <label class="switch">
+                <input type="checkbox" id="filter" name="filter" checked>
+                <span class="slider"></span>
+            </label>
+        {% endif %}
+        {% if prechecked == "False" %}
+            <label class="switch">
+                <input type="checkbox" id="filter" name="filter">
+                <span class="slider"></span>
+            </label>
+        {% endif %}
     <br>
-    <!-- Rounded switch -->
-    {% if prechecked == "True" %}
-        <label class="switch">
-            <input type="checkbox" id="filter" name="filter" checked>
-            <span class="slider"></span>
-        </label>
+    <br>
     {% endif %}
-    {% if prechecked == "False" %}
-        <label class="switch">
-            <input type="checkbox" id="filter" name="filter">
-            <span class="slider"></span>
-        </label>
-    {% endif %}
-    <br>
-    <br>
     <label for="privacy" class="label">Change Privacy Setting</label>
     {% if privacy == "Public" %}
     <select name="privacy" id="privacy">
