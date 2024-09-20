@@ -10,7 +10,7 @@ def get_default_image():  # Gets the image data from the default profile image. 
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
     return image_data
-def return_image(image_name, username, userFilterOn):  # Returns image from user posts
+def return_image(image_name, username):  # Returns image from user posts
 
         # Connect to database
         DATABASE = "database.db"
@@ -39,18 +39,10 @@ def return_all_posts(username):  # Returns all posts from a user's page
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # Get image data from posts table
-    query = f"SELECT PostName FROM tPosts WHERE [Username] = '{username}'"
+    query = f"SELECT * FROM tPosts WHERE [Username] = '{username}'"
     c = cursor.execute(query)
     images = c.fetchall()
-    imageList = []
-    c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
-    userFilterOn = str(c.fetchone()).strip("(' ',)")
-    # Loop through each image in the query
-    for i in range(len(images)):
-        # Add the current image to the ImageList list, using return_image to convert
-        imageList.append(return_image(str(images[i]).strip("(' ',)"), username, userFilterOn))
-    # Return all the images in the list
-    return imageList
+    return images
 def delete_image_files():  # For cleanup. Removes profile images from static/ when not in use
     # Select from the Users table
     sql = "SELECT * FROM 'tUsers'"
@@ -132,17 +124,19 @@ def execute_sql(sql, val):  # Unused but here as a reference template for sql ex
 # Define the app
 app = Flask(__name__)
 
+
 # Secret key because society
 app.secret_key = 'beans on toast'
 # Home route
 @app.route('/', methods=("GET", "POST"))
 def home():
+
     if request.method == 'POST':  # If we want to search for something
         delete_post_files()  # Remove the posts
         delete_image_files()  # Remove the profile pictures
         search_term = request.form['search']  # Get search term (ID of dictionary)
         # Find the correct search term from user table
-        sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}'"
+        sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}' AND [Privacy] = 'Public'"
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
@@ -185,25 +179,25 @@ def home():
     cursor = db.cursor()
     c = cursor.execute(sql)
     posts = c.fetchall()
-    c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
-    userFilterOn = str(c.fetchone()).strip("(' ',)")
-    print(f"LEN: {len(posts)}")
-    topPosts = []
-    for i in range(len(posts)):
-        print(posts[i][6])
-        if rows[i][6] == False:
-            topPosts.append(posts[i])
-            print(f"YES: {posts[i][3]}")
-        print("yes this loop is working")
-    db.close()
+    try:
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        userFilterOn = str(c.fetchone()).strip("(' ',)")
+        print(f"LEN: {len(posts)}")
+        topPosts = []
+        for i in range(len(posts)):
+            if posts[i][6] == "False" and userFilterOn:
+                topPosts.append(posts[i])
+        db.close()
+    except:
+        print("nothing here")
     # Sort function
     def sort_func(e):
         return e[4]
     # Sort the rows so the highest are at the front
-    posts.sort(reverse=True, key=sort_func)
-    topPost1 = return_image(posts[0][3], posts[0][1],userFilterOn)
-    topPost2 = return_image(posts[1][3], posts[1][1],userFilterOn)
-    topPost3 = return_image(posts[2][3], posts[2][1], userFilterOn)
+    topPosts.sort(reverse=True, key=sort_func)
+    topPost1 = return_image(topPosts[0][3], topPosts[0][1])
+    topPost2 = return_image(topPosts[1][3], topPosts[1][1])
+    topPost3 = return_image(topPosts[2][3], topPosts[2][1])
     # Check if we're logged in or not
     loggedIn = False
     try:
@@ -315,6 +309,7 @@ def logout():
 @app.route('/page/<username>', methods=['GET', 'POST'])
 def userpage(username):
     delete_image_files()  # Remove all profile pics
+    delete_post_files()  # Remove all Posts
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -325,11 +320,21 @@ def userpage(username):
     bio = user[9]
     # Get all posts
     image = return_all_posts(username)
-    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'")
+    try:
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        userFilterOn = str(c.fetchone()).strip("(' ',)")
+        print(f"LEN: {len(image)}")
+        posts = []
+        for i in range(len(image)):
+            if image[i][6] == "False" and userFilterOn:
+                posts.append(image[i])
+    except:
+        print("nothing here")
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     likes = (cursor.fetchall())
-    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}'")
+    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     desc = (cursor.fetchall())
-    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}'")
+    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     title = (cursor.fetchall())
     # Check if logged in
     loggedIn = False
@@ -353,9 +358,17 @@ def userpage(username):
     else:
         loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
         subscribed = False  # Since there's no user, we can't be subscribed anyway
+    post = []
+    print("LENGTH OF THE FUCKING POSTS: "+ str(len(posts)))
+    for i in range(len(posts)):
+        print(i)
+        post.append(return_image(posts[i][3],posts[i][1]))
+        print(post[i])
+
+
 
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=image, len=len(image), subscribed=subscribed, likes=likes, desc=desc, title=title, bio=bio)
+    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=post, len=len(post), subscribed=subscribed, likes=likes, desc=desc, title=title, bio=bio)
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
 def subscribe(username):  # Serves as a reload of the userpage but adding the subscription
     # Check if logged in, for safety reasons
