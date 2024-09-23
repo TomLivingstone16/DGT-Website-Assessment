@@ -11,28 +11,28 @@ def get_default_image():  # Gets the image data from the default profile image. 
         image_data = str(base64.b64encode(f.read()))
     return image_data
 def return_image(image_name, username):  # Returns image from user posts
+    # Connect to database
+    DATABASE = "database.db"
+    db = sqlite3.connect(DATABASE)
+    cursor = db.cursor()
+    # Get image data from posts table.
+    query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
+    c = cursor.execute(query)
+    image_data = c.fetchone()
+    # Convert the data from tuple to a byte
+    file = str(image_data).strip('(" ",)')
+    finalFile = file.strip("b' '")
+    # Decode the file
+    blob = base64.b64decode(finalFile)
+    # Create a new image file with the data from the blob
+    img_file = open("static/" + image_name + "_" + username + ".jpg", 'wb')
+    img_file.write(blob)
+    img_file.close()
 
-        # Connect to database
-        DATABASE = "database.db"
-        db = sqlite3.connect(DATABASE)
-        cursor = db.cursor()
-        # Get image data from posts table.
-        query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
-        c = cursor.execute(query)
-        image_data = c.fetchone()
-        # Convert the data from tuple to a byte
-        file = str(image_data).strip('(" ",)')
-        finalFile = file.strip("b' '")
-        # Decode the file
-        blob = base64.b64decode(finalFile)
-        # Create a new image file with the data from the blob
-        img_file = open("static/" + image_name + "_" + username + ".jpg", 'wb')
-        img_file.write(blob)
-        img_file.close()
-
-        print("Image retrieved and written to file.")
-        # Name and return the image. Stores in /static/.
-        return image_name+"_"+username + ".jpg"
+    print("Image retrieved and written to file.")
+    # Name and return the image. Stores in /static/.
+    print(image_name+"_"+username + ".jpg")
+    return image_name+"_"+username + ".jpg"
 def return_all_posts(username):  # Returns all posts from a user's page
     # Connect to database
     DATABASE = "database.db"
@@ -124,13 +124,11 @@ def execute_sql(sql, val):  # Unused but here as a reference template for sql ex
 # Define the app
 app = Flask(__name__)
 
-
 # Secret key because society
 app.secret_key = 'beans on toast'
 # Home route
 @app.route('/', methods=("GET", "POST"))
 def home():
-
     if request.method == 'POST':  # If we want to search for something
         delete_post_files()  # Remove the posts
         delete_image_files()  # Remove the profile pictures
@@ -147,9 +145,15 @@ def home():
             row_true = rows[0]
             profile_pic = get_profile_picture(row_true[1])
             # Return the combo view page
-            return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=session["loggedin"])
+            try:
+                return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=session["loggedin"])
+            except:
+                return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=False)
         except:  # If we don't have results, send through negative responses
-            return render_template('results.html', results=False, loggedIn=session["loggedin"])
+            try:
+                return render_template('results.html', results=False, loggedIn=session["loggedin"])
+            except:
+                return render_template('results.html', results=False, loggedIn=False)
     delete_post_files()  # Remove post files just in case
     # Grab top 3 accounts to display/idolize/etc.
     # Select all accounts
@@ -167,7 +171,6 @@ def home():
     # Sort the rows so the highest are at the front
     rows.sort(reverse=True, key=sort_func)
     print(len(rows))
-
 
     # Get profile pics of top accounts
     prof1 = get_profile_picture(rows[0][1])
@@ -189,15 +192,24 @@ def home():
                 topPosts.append(posts[i])
         db.close()
     except:
-        print("nothing here")
+        topPosts = []
+        for i in range(len(posts)):
+            if posts[i][6] == "False":
+                topPosts.append(posts[i])
     # Sort function
+
     def sort_func(e):
         return e[4]
     # Sort the rows so the highest are at the front
-    topPosts.sort(reverse=True, key=sort_func)
-    topPost1 = return_image(topPosts[0][3], topPosts[0][1])
-    topPost2 = return_image(topPosts[1][3], topPosts[1][1])
-    topPost3 = return_image(topPosts[2][3], topPosts[2][1])
+    try:
+        topPosts.sort(reverse=True, key=sort_func)
+        topPost1 = return_image(topPosts[0][3], topPosts[0][1])
+        topPost2 = return_image(topPosts[1][3], topPosts[1][1])
+        topPost3 = return_image(topPosts[2][3], topPosts[2][1])
+    except:
+        topPost1 = 0
+        topPost2 = 0
+        topPost3 = 0
     # Check if we're logged in or not
     loggedIn = False
     try:
@@ -237,7 +249,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "{age}" "True", "")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "{age}", "True", "")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -329,7 +341,10 @@ def userpage(username):
             if image[i][6] == "False" and userFilterOn:
                 posts.append(image[i])
     except:
-        print("nothing here")
+        posts = []
+        for i in range(len(image)):
+            if image[i][6] == "False":
+                posts.append(image[i])
     cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     likes = (cursor.fetchall())
     cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
@@ -359,13 +374,14 @@ def userpage(username):
         loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
         subscribed = False  # Since there's no user, we can't be subscribed anyway
     post = []
-    print("LENGTH OF THE FUCKING POSTS: "+ str(len(posts)))
-    for i in range(len(posts)):
-        print(i)
-        post.append(return_image(posts[i][3],posts[i][1]))
-        print(post[i])
-
-
+    try:
+        print("LENGTH OF THE POSTS: " + str(len(posts)))
+        for i in range(len(posts)):
+            print(i)
+            post.append(return_image(posts[i][3], posts[i][1]))
+            print(post[i])
+    except:
+        print("Nothing happens.")
 
     # Return user page
     return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=post, len=len(post), subscribed=subscribed, likes=likes, desc=desc, title=title, bio=bio)
@@ -446,7 +462,7 @@ def settings():
     year = int(dateParts[0])
     month = int(dateParts[1])
     day = int(dateParts[2])
-    date = datetime(year,month,day)
+    date = datetime(year, month, day)
     print(date)
     ageLock = (date.date() < datetime.today().date())
     return render_template('settings.html', prechecked=filter, privacy=privacy, ageLock=ageLock)
@@ -508,7 +524,7 @@ def new_post():
     with open('static/temp_image.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
-    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}")')
+    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}","False")')
     db.commit()
     os.remove("static/temp_image.jpg")
     return redirect(url_for("userpage", username=session["username"]))

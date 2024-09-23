@@ -15,10 +15,20 @@
     {% else %}
     <!--Nav-->
         {% if loggedInUser == username %}
-            <ul>
-            <li><a class="userpageButtons" href="{{url_for('add_post')}}" style="width:100px">Post</a></li>
-            <li><a class="userpageButtons" href="{{url_for('settings')}}" style="width:100px"><i class="fa fa-gear"></i></a></li>
-            </ul>
+        <ul>
+            <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
+            <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
+        </ul>
+        <div>
+            <a style="float: left; font-size: 30px; display: inline; padding-left: 12px; padding-right: 12px;" href="{{url_for('settings')}}"><i class="fa fa-gear"></i></a>
+            <li style="list-style-type: none; padding: 0; overflow: hidden; background-color: #EA526F; width : 150px">
+                <a class="" href="{{url_for('add_post')}}" style="width:150px">Post</a>
+            </li>
+        </div>
+
+
+
+
         {%else%}
             {% if subscribed == False %}
             <ul class="subscribeButton">
@@ -32,13 +42,14 @@
         {%endif%}
 {% endif %}
     <div class="left" >
+
         <h2>{{username}}</h2>
         <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
-        <h2 class="followerCount">{{followerCount}} Followers</h2>
+        <h2 class="followerCount">My Followers: {{followerCount}} </h2>
         <p style="width:325px; margin-left: 25px">{{bio}}</p>
     </div>
-
         {% for i in range (0, len)%}
+<h1>{{username}}'s Latest Posts</h1>
         <div class="post" style="display: inline-block;">
             <h3 style="padding:10px">{{title[i][0]}}</h3>
             <a href="{{url_for('postpage',username=username,postname=title[i][0])}}"><img src="{{url_for('static',filename=post[i])}}"></a>
