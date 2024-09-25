@@ -48,8 +48,8 @@
         <h2 class="followerCount">My Followers: {{followerCount}} </h2>
         <p style="width:325px; margin-left: 25px">{{bio}}</p>
     </div>
-        {% for i in range (0, len)%}
 <h1>{{username}}'s Latest Posts</h1>
+        {% for i in range (0, len)%}
         <div class="post" style="display: inline-block;">
             <h3 style="padding:10px">{{title[i][0]}}</h3>
             <a href="{{url_for('postpage',username=username,postname=title[i][0])}}"><img src="{{url_for('static',filename=post[i])}}"></a>
@@ -65,8 +65,6 @@
             </form>
         </div>
     {% endfor %}
-
-
 
 
 {%endblock%}

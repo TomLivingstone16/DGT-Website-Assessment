@@ -185,7 +185,7 @@ def home():
     try:
         c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
-        print(f"LEN: {len(posts)}")
+        print(f"LENORE: {len(posts)}")
         topPosts = []
         for i in range(len(posts)):
             if posts[i][6] == "False" and userFilterOn:
@@ -294,9 +294,6 @@ def login():
             topPost2 = return_image(posts[1][3], posts[1][1])
             topPost3 = return_image(posts[2][3], posts[2][1])
 
-            def sort_func(e):
-                return e[4]
-
             rows.sort(reverse=True, key=sort_func)
             top1 = rows[0]
             top2 = rows[1]
@@ -335,15 +332,16 @@ def userpage(username):
     try:
         c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
-        print(f"LEN: {len(image)}")
+        print(f"LENORE: {len(image)}")
         posts = []
         for i in range(len(image)):
-            if image[i][6] == "False" and userFilterOn:
+            if image[i][6] == userFilterOn or image[i][6] == "False":
                 posts.append(image[i])
     except:
         posts = []
         for i in range(len(image)):
-            if image[i][6] == "False":
+            print("In here")
+            if image[i][6] != "True":
                 posts.append(image[i])
     cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     likes = (cursor.fetchall())
@@ -380,6 +378,7 @@ def userpage(username):
             print(i)
             post.append(return_image(posts[i][3], posts[i][1]))
             print(post[i])
+        print(post)
     except:
         print("Nothing happens.")
 
@@ -524,7 +523,11 @@ def new_post():
     with open('static/temp_image.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
-    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}","False")')
+    if request.form.get("filter") == "on":
+        filter = True
+    else:
+        filter = False
+    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}","{filter}")')
     db.commit()
     os.remove("static/temp_image.jpg")
     return redirect(url_for("userpage", username=session["username"]))
