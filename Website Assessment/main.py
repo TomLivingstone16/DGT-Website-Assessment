@@ -341,7 +341,7 @@ def userpage(username):
         posts = []
         for i in range(len(image)):
             print("In here")
-            if image[i][6] != "True":
+            if image[i][6] == "False":
                 posts.append(image[i])
     cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND [FilterApplies] = 'False'")
     likes = (cursor.fetchall())
