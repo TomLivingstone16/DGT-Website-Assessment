@@ -3,7 +3,7 @@ import sqlite3
 import re
 import base64
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
     with open('static/default_profile.jpg', 'rb') as f:
@@ -232,11 +232,11 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
+        age = request.form['bday']
         # Connect to the database
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
-        age = 0
         cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"', )
         account = cursor.fetchone()
         if account:  # If the account is already in use
@@ -249,7 +249,7 @@ def signup():
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "PUBLIC", "{age}", "True", "")')  # add new account to database
+            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "Public", "{age}", "True", "")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
@@ -462,9 +462,10 @@ def settings():
     month = int(dateParts[1])
     day = int(dateParts[2])
     date = datetime(year, month, day)
-    print(date)
-    ageLock = (date.date() < datetime.today().date())
-    return render_template('settings.html', prechecked=filter, privacy=privacy, ageLock=ageLock)
+    print(date.date() + timedelta(days=6575))
+    print(datetime.today().date())
+    ageLock = (datetime.today().date() < date.date() + timedelta(days=6575))
+    return render_template('settings.html', prechecked=filter, privacy=privacy, ageLock=str(ageLock))
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_post():
     delete_image_files()

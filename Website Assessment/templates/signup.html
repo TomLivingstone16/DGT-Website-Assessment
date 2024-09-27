@@ -15,9 +15,18 @@
     <h2 class="word">
         <form action="{{ url_for('signup') }}" method="post">
           <div class="msg">{{ msg }}</div>
-            <input id="username" name="username" type="text" placeholder="Enter Your Username" class="textbox"/></br></br>
-            <input id="password" name="password" type="password" placeholder="Enter Your Password" class="textbox"/></br></br>
-            <input id="email" name="email" type="text" placeholder="Enter Your Email ID" class="textbox"/></br></br>
+            <label for="username">Please enter your Username</label>
+            <br>
+            <input id="username" name="username" type="text" placeholder="Username..." class="textbox"/></br></br>
+            <label for="username">Please enter your Password</label>
+            <br>
+            <input id="password" name="password" type="password" placeholder="Password..." class="textbox"/></br></br>
+           <label for="username">Please enter your Email</label>
+            <br>
+            <input id="email" name="email" type="text" placeholder="Email" class="textbox"/></br></br>
+            <label for="username">Please enter your Birthday</label>
+            <br>
+            <input id="bday" name="bday" type="date" class="textbox"/></br></br>
             <input type="submit" class="btn" value="Sign Up"></br>
         </form>
     </h2>
