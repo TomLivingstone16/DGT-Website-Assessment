@@ -25,10 +25,6 @@
                 <a class="" href="{{url_for('add_post')}}" style="width:150px">Post</a>
             </li>
         </div>
-
-
-
-
         {%else%}
             {% if subscribed == False %}
             <ul class="subscribeButton">
@@ -41,7 +37,7 @@
             {%endif%}
         {%endif%}
 {% endif %}
-    <div class="left" >
+    <div class="left" > <!--Display profile info on the left side-->
 
         <h2>{{username}}</h2>
         <img class="profilePic" src="{{ url_for('static', filename=profile_picture) }}">
@@ -49,7 +45,7 @@
         <p style="width:325px; margin-left: 25px">{{bio}}</p>
     </div>
 <h1>{{username}}'s Latest Posts</h1>
-        {% for i in range (0, len)%}
+        {% for i in range (0, len)%} <!--Loop through posts and display them-->
         <div class="post" style="display: inline-block;">
             <h3 style="padding:10px">{{title[i][0]}}</h3>
             <a href="{{url_for('postpage',username=username,postname=title[i][0])}}"><img src="{{url_for('static',filename=post[i])}}"></a>

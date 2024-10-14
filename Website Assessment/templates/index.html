@@ -14,7 +14,7 @@
             <li><a href="{{url_for('signup')}}">Signup</a></li>
         </ul>
     {% else %}
-    <!--nav-->
+    <!--nav, if we're logged in-->
             <ul>
                 <li><a style="padding: 14px 20px;" href="{{url_for('userpage',username=session['username'])}}" >My Page</a></li>
                 <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
@@ -22,12 +22,14 @@
 {% endif %}
 <h1>Blubber</h1> <!--Main title-->
 
+<!--Search Bar-->
 <form method="post" class="w3-container">
     <input class="searchBar" type="text" placeholder="Search..." name="search" value="{{request.form['search']}}">
     <button class="searchButton" type="submit"><i class="fa fa-search"></i></button>
     <br>
 </form>
 
+<!--Display Top Profiles-->
 <h2>Top profiles:</h2>
 <a class="profileLink" href="{{url_for('userpage',username=top1[1])}}"> &nbsp;&nbsp;{{top1[1]}}</a>
     <img class="profilePic" src="{{ url_for('static', filename=prof1) }}">

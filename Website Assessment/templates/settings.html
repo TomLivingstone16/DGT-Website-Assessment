@@ -20,9 +20,9 @@
                 <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
             </ul>
 
-
+<!--Settings UI-->
 <form action="{{url_for('reload_settings')}}" method="post" enctype="multipart/form-data">
-    <div class="left">
+    <div class="left"> <!--This part is aligned to the left, allowing for more options on the screen at once-->
     <label for="Username" class="label">Change Account Details</label>
     <br>
     <input id="username" name="username" type="text" placeholder="Enter Your Username" >
@@ -39,17 +39,17 @@
     <input type="file" id="file" name="file" />
     <br>
     <br>
-    {% if ageLock == "False" %}
+    {% if ageLock == "False" %} <!--if the agelock's on, then hide the entire content filter switch-->
         <label for="filter" class="label">Content Filter</label>
         <br>
         <!-- Rounded switch -->
-        {% if prechecked == "True" %}
+        {% if prechecked == "True" %} <!--if we've already prechecked it, we should display that-->
             <label class="switch">
                 <input type="checkbox" id="filter" name="filter" checked>
                 <span class="slider"></span>
             </label>
         {% endif %}
-        {% if prechecked == "False" %}
+        {% if prechecked == "False" %} <!--if we've not checked it, we should display that-->
             <label class="switch">
                 <input type="checkbox" id="filter" name="filter">
                 <span class="slider"></span>
@@ -59,13 +59,13 @@
     <br>
     {% endif %}
     <label for="privacy" class="label">Change Privacy Setting</label>
-    {% if privacy == "Public" %}
+    {% if privacy == "Public" %} <!--display public privacy if we've checked that-->
     <select name="privacy" id="privacy">
       <option selected value="Public">Public</option>
       <option value="Private">Private</option>
     </select>
     {% endif %}
-    {% if privacy == "Private" %}
+    {% if privacy == "Private" %} <!--display private privacy if we've checked that-->
     <select name="privacy" id="privacy">
       <option value="Public">Public</option>
       <option selected value="Private">Private</option>
@@ -87,6 +87,5 @@
 
 </form>
 
-<script src="static/getimage.js"></script>
 {% endif %}
 {%endblock%}

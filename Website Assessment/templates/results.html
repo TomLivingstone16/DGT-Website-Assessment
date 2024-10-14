@@ -19,12 +19,12 @@
                 <li><a style="padding: 14px 19px;" href="{{url_for('logout')}}" >Log Out</a></li>
             </ul>
 {% endif %}
-{% if results == True %}
+{% if results == True %} <!--Display Results-->
         <h3>Search results for {{search_term}}:</h3>
         <a class="profileLink" href="{{url_for('userpage',username=rows[0][1])}}">{{rows[0][1]}}</a>
         <img class="profilePic" src="{{ url_for('static', filename=profile_pic) }}">
         <h2 class="followerCount">{{rows[0][4]}} Followers</h2>
-    {% else %}
+    {% else %} <!--Nothing there, so display nothing-->
         <p>No results found..</p>
 {% endif %}
 {%endblock%}
