@@ -39,7 +39,7 @@
     <form action="{{url_for('like_post')}}" method="post">
         <input type="submit" style="margin:10px" value="Like"><i class="fa fa-heart"></i> {{likes[0][0]}}
         <input name="user" class="hidden" type="text" value="{{loggedInUser}}">
-        <input name="post" class="hidden" type="text" value="{{title[0][0]}}">
+        <input name="post" class="hidden" type="text" value="{{title[0]}}">
         <input name="returnpage" class="hidden" type="text" value="{{username}}">
         <input name="endpoint" class="hidden" type="text" value="postpage">
         <br>

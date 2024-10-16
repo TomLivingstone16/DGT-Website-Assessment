@@ -331,12 +331,51 @@ def userpage(username):
             if image[i][6] == "False":
                 posts.append(image[i])
     # Select post data for each
-    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'")
-    likes = (cursor.fetchall())
-    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}'")
-    desc = (cursor.fetchall())
-    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}'")
-    title = (cursor.fetchall())
+    # Likes
+    try:
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        userFilterOn = str(c.fetchone()).strip("(' ',)")
+        print(f"LEN: {len(image)}")
+        likes = []
+        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+            if image[i][6] == userFilterOn or image[i][6] == "False":
+                likes.append(image[i][4])
+    except:
+        likes = []
+        for i in range(len(image)):
+            print("In here")
+            if image[i][6] == "False":
+                likes.append(image[i][4])
+    # Desc
+    try:
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        userFilterOn = str(c.fetchone()).strip("(' ',)")
+        print(f"LEN: {len(image)}")
+        desc = []
+        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+            if image[i][6] == userFilterOn or image[i][6] == "False":
+                desc.append(image[i][5])
+    except:
+        desc = []
+        for i in range(len(image)):
+            print("In here")
+            if image[i][6] == "False":
+                desc.append(image[i][5])
+    # Title
+    try:
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        userFilterOn = str(c.fetchone()).strip("(' ',)")
+        print(f"LEN: {len(image)}")
+        titles = []
+        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+            if image[i][6] == userFilterOn or image[i][6] == "False":
+                titles.append(image[i][3])
+    except:
+        titles = []
+        for i in range(len(image)):
+            print("In here")
+            if image[i][6] == "False":
+                titles.append(image[i][3])
     # Check if logged in
     loggedIn = False
     try:
@@ -369,10 +408,10 @@ def userpage(username):
         print(post)
     except:
         print("Nothing happens.")
-    print(title)
+    print(titles)
     print(post)
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=post, len=len(post), subscribed=subscribed, likes=likes, desc=desc, title=title, bio=bio)
+    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=post, len=len(post), subscribed=subscribed, likes=likes, desc=desc, title=titles, bio=bio)
 @app.route('/page/<username>/post/<postname>', methods=['GET', 'POST'])
 def postpage(username, postname):
     delete_image_files()  # Remove all profile pics

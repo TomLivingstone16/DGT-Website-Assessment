@@ -47,13 +47,13 @@
 <h1>{{username}}'s Latest Posts</h1>
 {% for i in range (0, len)%} <!--Loop through posts and display them-->
     <div class="post" style="display: inline-block;">
-        <h3 style="padding:10px">{{title[i][0]}}</h3>
-        <a href="{{url_for('postpage',username=username,postname=title[i][0])}}"><img src="{{url_for('static',filename=post[i])}}"></a>
-        <p style="padding:10px">{{desc[i][0]}}</p>
+        <h3 style="padding:10px">{{title[i]}}</h3>
+        <a href="{{url_for('postpage',username=username,postname=title[i])}}"><img src="{{url_for('static',filename=post[i])}}"></a>
+        <p style="padding:10px">{{desc[i]}}</p>
         <form action="{{url_for('like_post')}}" method="post">
-            <input type="submit" style="margin:10px" value="Like"><i class="fa fa-heart"></i> {{likes[i][0]}}
+            <input type="submit" style="margin:10px" value="Like"><i class="fa fa-heart"></i> {{likes[i]}}
             <input name="user" class="hidden" type="text" value="{{loggedInUser}}">
-            <input name="post" class="hidden" type="text" value="{{title[i][0]}}">
+            <input name="post" class="hidden" type="text" value="{{title[i]}}">
             <input name="returnpage" class="hidden" type="text" value="{{username}}">
             <input name="endpoint" class="hidden" type="text" value="userpage">
             <br>
