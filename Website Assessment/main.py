@@ -1,3 +1,4 @@
+"""This file runs the backbone of the website."""
 from flask import Flask, render_template, request, session, redirect, url_for
 import sqlite3
 import re
@@ -5,18 +6,22 @@ import base64
 import os
 from datetime import datetime, timedelta
 
-def get_default_image():  # Gets the image data from the default profile image. Set to newly created accounts
+
+def get_default_image():
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
     return image_data
-def return_image(image_name, username):  # Returns image from user posts
+
+
+def return_image(image_name, username):
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # Get image data from posts table.
-    query = f"SELECT ImageData FROM tPosts WHERE [Username] = '{username}' AND [PostName] = '{image_name}'"
+    query = (f"SELECT ImageData FROM tPosts WHERE "
+             f"[Username] = '{username}' AND [PostName] = '{image_name}'")
     c = cursor.execute(query)
     image_data = c.fetchone()
     # Convert the data from tuple to a byte
@@ -32,7 +37,9 @@ def return_image(image_name, username):  # Returns image from user posts
     # Name and return the image. Stores in /static/.
     print(image_name+"_"+username + ".jpg")
     return image_name+"_"+username + ".jpg"
-def return_all_posts(username):  # Returns all posts from a user's page
+
+
+def return_all_posts(username):
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -42,7 +49,9 @@ def return_all_posts(username):  # Returns all posts from a user's page
     c = cursor.execute(query)
     images = c.fetchall()
     return images
-def delete_image_files():  # For cleanup. Removes profile images from static/ when not in use
+
+
+def delete_image_files():
     # Select from the Users table
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
@@ -55,7 +64,9 @@ def delete_image_files():  # For cleanup. Removes profile images from static/ wh
     # If any are on the current page, they'll be re-added in that path.
     for i in range(len(rows)):
         os.remove(f"static/{get_profile_picture(rows[i][1])}")
-def delete_post_files():  # For cleanup. Deletes Post images from static/ when not in use.
+
+
+def delete_post_files():
     # Get each username to delete profile pics from
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
@@ -79,10 +90,13 @@ def delete_post_files():  # For cleanup. Deletes Post images from static/ when n
             # Convert files from tuple to string
             file = str(files[f]).strip("(' ',)")
             try:
-                os.remove(f"static/{file}_{rows[i][1]}.jpg")  # If file exists, make it not exist
+                # If file exists, make it not exist
+                os.remove(f"static/{file}_{rows[i][1]}.jpg")
             except:
                 print("File does not exist")  # If file doesn't exist, good.
-def get_profile_picture(username):  # Gets the profile picture for each account
+
+
+def get_profile_picture(username):
     # Connect to the database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -107,20 +121,26 @@ def get_profile_picture(username):  # Gets the profile picture for each account
     print("Image retrieved and written to file.")
 
     return username+".jpg"
+
+
 # Define the app
 app = Flask(__name__)
 
 # Secret key because society
 app.secret_key = 'beans on toast'
+
 # Home route
+
+
 @app.route('/', methods=("GET", "POST"))
 def home():
     if request.method == 'POST':  # If we want to search for something
         delete_post_files()  # Remove the posts
         delete_image_files()  # Remove the profile pictures
-        search_term = request.form['search']  # Get search term (ID of dictionary)
+        search_term = request.form['search']  # Get search term
         # Find the correct search term from user table
-        sql = f"SELECT * FROM 'tUsers' WHERE [Username] = '{search_term}' AND [Privacy] = 'Public'"
+        sql = (f"SELECT * FROM 'tUsers' "
+               f"WHERE [Username] = '{search_term}' AND [Privacy] = 'Public'")
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
@@ -132,14 +152,22 @@ def home():
             profile_pic = get_profile_picture(row_true[1])
             # Return the combo view page
             try:  # if we're logged in, it'll say we are
-                return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=session["loggedin"])
+                return render_template('results.html',
+                                       search_term=search_term, rows=rows,
+                                       profile_pic=profile_pic, results=True,
+                                       loggedIn=session["loggedin"])
             except:  # if we're not, it'll say we aren't
-                return render_template('results.html', search_term=search_term, rows=rows, profile_pic=profile_pic, results=True, loggedIn=False)
+                return render_template('results.html',
+                                       search_term=search_term, rows=rows,
+                                       profile_pic=profile_pic, results=True,
+                                       loggedIn=False)
         except:   # If we don't have results, send through negative responses
             try:  # if we're logged in, it'll say we are
-                return render_template('results.html', results=False, loggedIn=session["loggedin"])
+                return render_template('results.html', results=False,
+                                       loggedIn=session["loggedin"])
             except:  # if we're not, it'll say we aren't
-                return render_template('results.html', results=False, loggedIn=False)
+                return render_template('results.html', results=False,
+                                       loggedIn=False)
     delete_post_files()  # Remove post files just in case
     # Grab top 3 accounts to display/idolize/etc.
     # Select all accounts
@@ -147,7 +175,7 @@ def home():
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
-    c = cursor.execute(sql) 
+    c = cursor.execute(sql)
     rows = c.fetchall()
     db.close()
 
@@ -170,15 +198,16 @@ def home():
     c = cursor.execute(sql)
     posts = c.fetchall()
     try:  # check if the user's content filter is on
-        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE "
+                           f"[Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
         print(f"LEN: {len(posts)}")
         topPosts = []
         for i in range(len(posts)):
-            if posts[i][6] == "False" and userFilterOn:  # if the filter's on, only posts tagged as "false" for content filter will be added
+            if posts[i][6] == "False" and userFilterOn:
                 topPosts.append(posts[i])
         db.close()
-    except:  # backup case, any posts tagged as false will run. this should happen if we've not got a filter set, or not logged in
+    except:  # backup case, any posts tagged as false will run.
         topPosts = []
         for i in range(len(posts)):
             if posts[i][6] == "False":
@@ -208,13 +237,21 @@ def home():
         print("Nothing happens here")
 
     # Return the index page
-    return render_template('index.html', loggedIn=loggedIn, top1=rows[0], top2=rows[1], top3=rows[2], prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)  # Return index page
+    return render_template('index.html', loggedIn=loggedIn, top1=rows[0],
+                           top2=rows[1], top3=rows[2], prof1=prof1,
+                           prof2=prof2, prof3=prof3, topPost1=topPost1,
+                           topPost2=topPost2, topPost3=topPost3)
+
+
 # Log In system
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     delete_image_files()  # Delete profile pics
     msg = ''
-    if request.method == 'POST' and 'username' and 'password' and 'email' in request.form:  # AKA if all data is in its proper place
+    if (request.method == 'POST' and 'username' and 'password' and
+            'email' in request.form):
         # Set variables to the inputs
         username = request.form['username']
         password = request.form['password']
@@ -224,28 +261,35 @@ def signup():
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
-        cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"', )
+        cursor.execute(f'SELECT * FROM tUsers WHERE '
+                       f'[Username] = "{username}"', )
         account = cursor.fetchone()
         if account:  # If the account is already in use
             msg = 'Account already exists !'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):  # If email is invalid
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):  # not valid
             msg = 'Invalid email address !'
-        elif not re.match(r'[A-Za-z0-9]+', username):  # If username has invalid letters
+        elif not re.match(r'[A-Za-z0-9]+', username):  # not valid
             msg = 'Username must contain only characters and numbers !'
-        elif not username or not password or not email:  # If the form's not filled out properly
+        elif not username or not password or not email:  # not properly filled
             msg = 'Please fill out the form!'
         else:  # Everything is correct!
             image = get_default_image()  # get default profile image
-            cursor.execute(f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}","{email}",0,"{image}", "Public", "{bday}", "True", "")')  # add new account to database
+            cursor.execute(
+                f'INSERT INTO tUsers VALUES (NULL,"{username}","{password}",'
+                f'"{email}",0,"{image}", "Public", "{bday}",'
+                f' "True", "")')  # add new account to database
             db.commit()
             msg = 'You have successfully registered !'
     # Return signup page
     return render_template('signup.html', msg=msg)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     delete_image_files()  # Delete old profile images
     msg = ''
-    if request.method == 'POST' and 'username' in request.form and 'password' in request.form:  # If inputs are correct
+    if (request.method == 'POST' and 'username' in request.form and 'password'
+            in request.form):  # If inputs are correct
         # Set variables to inputs
         username = request.form['username']
         password = request.form['password']
@@ -253,13 +297,14 @@ def login():
         DATABASE = "database.db"
         db = sqlite3.connect(DATABASE)
         cursor = db.cursor()
-        cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}" AND [Password] = "{password}"')
+        cursor.execute(f'SELECT * FROM tUsers WHERE [Username] = "{username}"'
+                       f' AND [Password] = "{password}"')
         account = cursor.fetchone()
         if account:  # if it exists, log in
             session['loggedin'] = True
             session['username'] = username
             msg = 'Logged in successfully !'
-            # everything below is prep for the index page since we go there now
+            # index page variables
             sql = "SELECT * FROM 'tUsers'"
             DATABASE = "database.db"
             db = sqlite3.connect(DATABASE)
@@ -288,11 +333,17 @@ def login():
             prof1 = get_profile_picture(top1[1])
             prof2 = get_profile_picture(top2[1])
             prof3 = get_profile_picture(top3[1])
-            return render_template('index.html', msg=msg, top1=top1, top2=top2, top3=top3, prof1=prof1, prof2=prof2, prof3=prof3, topPost1=topPost1, topPost2=topPost2, topPost3=topPost3)
+            return render_template('index.html', msg=msg, top1=top1,
+                                   top2=top2, top3=top3, prof1=prof1,
+                                   prof2=prof2, prof3=prof3,
+                                   topPost1=topPost1, topPost2=topPost2,
+                                   topPost3=topPost3)
         else:  # If username/password is wrong/doesn't exist
             msg = 'Incorrect username / password !'
     # Return login page
     return render_template('login.html', msg=msg)
+
+
 @app.route('/*')
 def logout():
     # Remove everything
@@ -301,7 +352,11 @@ def logout():
     session.pop('username', None)
     # Go to the home page
     return redirect(url_for('home'))
+
+
 # User Pages & Posts
+
+
 @app.route('/page/<username>', methods=['GET', 'POST'])
 def userpage(username):
     delete_image_files()  # Remove all profile pics
@@ -317,11 +372,12 @@ def userpage(username):
     # Get all posts
     image = return_all_posts(username)
     try:  # check if the user's content filter is on
-        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE "
+                           f"[Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
         print(f"LEN: {len(image)}")
         posts = []
-        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+        for i in range(len(image)):  # only display posts that are appropriate
             if image[i][6] == userFilterOn or image[i][6] == "False":
                 posts.append(image[i])
     except:  # again, backup case
@@ -333,11 +389,12 @@ def userpage(username):
     # Select post data for each
     # Likes
     try:
-        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE "
+                           f"[Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
         print(f"LEN: {len(image)}")
         likes = []
-        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+        for i in range(len(image)):  # only display posts that are appropriate
             if image[i][6] == userFilterOn or image[i][6] == "False":
                 likes.append(image[i][4])
     except:
@@ -348,11 +405,12 @@ def userpage(username):
                 likes.append(image[i][4])
     # Desc
     try:
-        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE "
+                           f"[Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
         print(f"LEN: {len(image)}")
         desc = []
-        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+        for i in range(len(image)):  # only display posts that are appropriate
             if image[i][6] == userFilterOn or image[i][6] == "False":
                 desc.append(image[i][5])
     except:
@@ -363,11 +421,12 @@ def userpage(username):
                 desc.append(image[i][5])
     # Title
     try:
-        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE [Username] = '{session['username']}'")
+        c = cursor.execute(f"SELECT [Content Filter] FROM tUsers WHERE "
+                           f"[Username] = '{session['username']}'")
         userFilterOn = str(c.fetchone()).strip("(' ',)")
         print(f"LEN: {len(image)}")
         titles = []
-        for i in range(len(image)):  # only display the posts that are appropriate for the user's filter
+        for i in range(len(image)):  # only display posts that are appropriate
             if image[i][6] == userFilterOn or image[i][6] == "False":
                 titles.append(image[i][3])
     except:
@@ -387,7 +446,9 @@ def userpage(username):
     if loggedIn:
         loggedInUser = session['username']
         # Check if we're subscribed
-        var = cursor.execute(f'SELECT * FROM tSubscriptions WHERE [Subscriber] = "{loggedInUser}" AND [To Which User] = "{username}"')
+        var = cursor.execute(f'SELECT * FROM tSubscriptions WHERE '
+                             f'[Subscriber] = "{loggedInUser}" AND'
+                             f' [To Which User] = "{username}"')
         db.commit()
         isSubscribed = var.fetchone()
         if isSubscribed is None:
@@ -396,8 +457,8 @@ def userpage(username):
             subscribed = True
         # The page we're going to is ours, so make sure we know that
     else:
-        loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
-        subscribed = False  # Since there's no user, we can't be subscribed anyway
+        loggedInUser = "N/A"
+        subscribed = False
     post = []
     try:  # loop through all the images and return their data
         print("LENGTH OF THE POSTS: " + str(len(posts)))
@@ -411,22 +472,34 @@ def userpage(username):
     print(titles)
     print(post)
     # Return user page
-    return render_template("userpage.html", username=user[1], followerCount=user[4], profile_picture=profile_picture, loggedIn=loggedIn, loggedInUser=loggedInUser, post=post, len=len(post), subscribed=subscribed, likes=likes, desc=desc, title=titles, bio=bio)
+    return render_template("userpage.html", username=user[1],
+                           followerCount=user[4],
+                           profile_picture=profile_picture, loggedIn=loggedIn,
+                           loggedInUser=loggedInUser, post=post, len=len(post),
+                           subscribed=subscribed, likes=likes, desc=desc,
+                           title=titles, bio=bio)
+
+
 @app.route('/page/<username>/post/<postname>', methods=['GET', 'POST'])
 def postpage(username, postname):
     delete_image_files()  # Remove all profile pics
-    delete_post_files()  # Remove all post files, the one we need will be added later
+    delete_post_files()  # Remove all post files
     print(f"{username} : {postname}")
     postImg = return_image(postname, username)
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # Get posts data
-    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'"
+                   f" AND PostName = '{postname}'")
     likes = (cursor.fetchall())
-    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT PostDescription FROM tPosts "
+                   f"WHERE Username = '{username}'"
+                   f" AND PostName = '{postname}'")
     desc = (cursor.fetchall())
-    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT PostName FROM tPosts "
+                   f"WHERE Username = '{username}'"
+                   f" AND PostName = '{postname}'")
     title = (cursor.fetchall())
     # check if we're logged in
     loggedIn = False
@@ -440,7 +513,9 @@ def postpage(username, postname):
         loggedInUser = session['username']
         # Check if we're subscribed
         var = cursor.execute(
-            f'SELECT * FROM tSubscriptions WHERE [Subscriber] = "{loggedInUser}" AND [To Which User] = "{username}"')
+            f'SELECT * FROM tSubscriptions WHERE '
+            f'[Subscriber] = "{loggedInUser}" '
+            f'AND [To Which User] = "{username}"')
         db.commit()
         isSubscribed = var.fetchone()
         if isSubscribed is None:
@@ -449,13 +524,20 @@ def postpage(username, postname):
             subscribed = True
         # The page we're going to is ours, so make sure we know that
     else:
-        loggedInUser = "N/A"  # Page we're going to is not ours, so it doesn't matter whose it is
-        subscribed = False  # Since there's no user, we can't be subscribed anyway
+        loggedInUser = "N/A"
+        subscribed = False
 
-    return render_template('post.html', postImg=postImg, title=title, likes=likes, desc=desc, loggedInUser=loggedInUser, username=username, subscribed=subscribed, loggedIn=loggedIn)
+    return render_template('post.html', postImg=postImg, title=title,
+                           likes=likes, desc=desc, loggedInUser=loggedInUser,
+                           username=username, subscribed=subscribed,
+                           loggedIn=loggedIn)
+
+
 # Subscription management
+
+
 @app.route('/subscribe/<username>', methods=['GET', 'POST'])
-def subscribe(username):  # Serves as a reload of the userpage but adding the subscription
+def subscribe(username):
     # Check if logged in, for safety reasons
     loggedIn = False
     try:
@@ -465,27 +547,33 @@ def subscribe(username):  # Serves as a reload of the userpage but adding the su
     except:
         print("Nothing happens here")
     if loggedIn:
-        loggedInUser = session['username']  # We are logged in, so supply that to the database
+        loggedInUser = session['username']
     else:
-        loggedInUser = "N/A"  # We are not logged in. This should never happen, but it would be funny if it did.
+        loggedInUser = "N/A"
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # Insert into subscriptions table
-    cursor.execute(f'INSERT INTO tSubscriptions VALUES (NULL,"{loggedInUser}","{username}")')
+    cursor.execute(f'INSERT INTO tSubscriptions VALUES '
+                   f' (NULL,"{loggedInUser}","{username}")')
     db.commit()
     # Get Follower count and convert from tuple to integer
-    FollowerCount = cursor.execute(f"SELECT FollowerCount FROM tUsers WHERE Username = '{username}'")
+    FollowerCount = cursor.execute(f"SELECT FollowerCount "
+                                   f"FROM tUsers WHERE "
+                                   f"Username = '{username}'")
     FollowerInt = int(str(FollowerCount.fetchone()).strip("( ),")) + 1
     # Update tUsers to add 1 to followerCount
-    cursor.execute(f"UPDATE tUsers SET FollowerCount = {FollowerInt} WHERE Username = '{username}'")
+    cursor.execute(f"UPDATE tUsers SET FollowerCount = "
+                   f"{FollowerInt} WHERE Username = '{username}'")
     db.commit()
     db.close()
     print("Subscribed!")
     return redirect(url_for("userpage", username=username))
+
+
 @app.route('/unsubscribe/<username>', methods=['GET', 'POST'])
-def unsubscribe(username):  # Serves as a reload of the userpage but removing the subscription
+def unsubscribe(username):
     # Check if logged in, for safety reasons
     loggedIn = False
     try:
@@ -495,26 +583,33 @@ def unsubscribe(username):  # Serves as a reload of the userpage but removing th
     except:
         print("Nothing happens here")
     if loggedIn:
-        loggedInUser = session['username']  # We are logged in, so supply that to the database
+        loggedInUser = session['username']
     else:
-        loggedInUser = "N/A"  # We are not logged in. This should never happen, but it would be funny if it did.
+        loggedInUser = "N/A"
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # Remove from subscriptions table
-    cursor.execute(f'DELETE FROM tSubscriptions WHERE Subscriber = "{loggedInUser}" AND [To Which User] = "{username}"')
+    cursor.execute(f'DELETE FROM tSubscriptions WHERE Subscriber '
+                   f'= "{loggedInUser}" AND [To Which User] = "{username}"')
     db.commit()
     # Get Follower count and convert from tuple to integer
-    FollowerCount = cursor.execute(f"SELECT FollowerCount FROM tUsers WHERE Username = '{username}'")
+    FollowerCount = cursor.execute(f"SELECT FollowerCount FROM "
+                                   f"tUsers WHERE Username = '{username}'")
     FollowerInt = int(str(FollowerCount.fetchone()).strip("( ),")) - 1
     # Update tUsers to remove 1 from followerCount
-    cursor.execute(f"UPDATE tUsers SET FollowerCount = {FollowerInt} WHERE Username = '{username}'")
+    cursor.execute(f"UPDATE tUsers SET FollowerCount = {FollowerInt} "
+                   f"WHERE Username = '{username}'")
     db.commit()
     db.close()
     print("Subscribed!")
     return redirect(url_for("userpage", username=username))
+
+
 # Settings
+
+
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     # cleanup, delete images and post from memory
@@ -525,11 +620,14 @@ def settings():
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # return everything that's pre-checked
-    c = cursor.execute(f'SELECT [Content Filter] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    c = cursor.execute(f'SELECT [Content Filter] FROM tUsers'
+                       f' WHERE [Username] = "{session["username"]}"')
     filter = str(c.fetchone()).strip("(' ',)")
-    c = cursor.execute(f'SELECT [Privacy] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    c = cursor.execute(f'SELECT [Privacy] FROM tUsers WHERE'
+                       f' [Username] = "{session["username"]}"')
     privacy = str(c.fetchone()).strip("(' ',)")
-    c = cursor.execute(f'SELECT [Birthday] FROM tUsers WHERE [Username] = "{session["username"]}"')
+    c = cursor.execute(f'SELECT [Birthday] FROM tUsers WHERE'
+                       f' [Username] = "{session["username"]}"')
     userBday = str(c.fetchone()).strip("(' ',)")
     # convert the birthday string to be usable in code
     dateParts = userBday.split("-")
@@ -537,9 +635,12 @@ def settings():
     month = int(dateParts[1])
     day = int(dateParts[2])
     date = datetime(year, month, day)
-    # set age lock to be true or false depending on whether the user has passed 18 years old
+    # set lock if user is over 18
     ageLock = (datetime.today().date() < date.date() + timedelta(days=6575))
-    return render_template('settings.html', prechecked=filter, privacy=privacy, ageLock=str(ageLock))
+    return render_template('settings.html', prechecked=filter,
+                           privacy=privacy, ageLock=str(ageLock))
+
+
 @app.route('/uploader', methods=['GET', 'POST'])
 def reload_settings():
     if request.method == 'POST':
@@ -550,40 +651,50 @@ def reload_settings():
         if request.form['username']:  # if username needs to be changed
             uname = request.form['username']
             cursor.execute(
-                f'UPDATE tUsers SET [Username] = "{uname}" WHERE Username = "{session["username"]}"')
+                f'UPDATE tUsers SET [Username] = "{uname}" WHERE Username'
+                f' = "{session["username"]}"')
             session['username'] = uname
         if request.form['email']:  # if email needs to be changed
             email = request.form['email']
             cursor.execute(
-                f'UPDATE tUsers SET [Email] = "{email}" WHERE Username = "{session["username"]}"')
+                f'UPDATE tUsers SET [Email] = "{email}" WHERE Username '
+                f'= "{session["username"]}"')
         if request.form['password']:  # if password needs to be changed
             pword = request.form['password']
-            cursor.execute(f'UPDATE tUsers SET [Password] = "{pword}" WHERE Username = "{session["username"]}"')
+            cursor.execute(f'UPDATE tUsers SET [Password] = "{pword}"'
+                           f' WHERE Username = "{session["username"]}"')
         # filter is weird so we do it differently
         if 'filter' not in request.form:
             filter = False
         else:
             filter = True
-        cursor.execute(
-            f'UPDATE tUsers SET [Content Filter] = "{filter}" WHERE Username = "{session["username"]}"')  # update filter
+        cursor.execute(  # update filter
+            f'UPDATE tUsers SET [Content Filter] = "{filter}" WHERE'
+            f' Username = "{session["username"]}"')
         if request.form['privacy']:  # if privacy needs to be changed
             privacy = request.form['privacy']
             cursor.execute(
-                f'UPDATE tUsers SET [Privacy] = "{privacy}" WHERE Username = "{session["username"]}"')
+                f'UPDATE tUsers SET [Privacy] = "{privacy}" WHERE '
+                f'Username = "{session["username"]}"')
         if request.form['bio']:  # if bio needs to be changed
             bio = request.form['bio']
             cursor.execute(
-                f'UPDATE tUsers SET [Bio] = "{bio}" WHERE Username = "{session["username"]}"')
+                f'UPDATE tUsers SET [Bio] = "{bio}" WHERE '
+                f'Username = "{session["username"]}"')
         if request.files['file']:  # if profile pic needs to change
             file = request.files['file']
-            file.save("static/temp_image.jpg")  # create a temporary image with the data
+            file.save("static/temp_image.jpg")  # create a temporary image
             with open('static/temp_image.jpg', 'rb') as f:
                 # Convert to Base64 for easy transfer
-                image_data = str(base64.b64encode(f.read()))  # copy the file data from the image
+                image_data = str(base64.b64encode(f.read()))
             os.remove("static/temp_image.jpg")  # remove the temporary image
-            cursor.execute(f'UPDATE tUsers SET [ProfileImage] = "{image_data}" WHERE Username = "{session["username"]}"')  # update the image
+            cursor.execute(  # update the image
+                f'UPDATE tUsers SET [ProfileImage] = "{image_data}" '
+                f'WHERE Username = "{session["username"]}"')
         db.commit()
         return redirect(url_for("settings"))
+
+
 # Adding Posts
 @app.route('/newpost', methods=['GET', 'POST'])
 def add_post():
@@ -592,6 +703,8 @@ def add_post():
     delete_post_files()
     # return login page
     return render_template('addpost.html', loggedIn=session['loggedin'])
+
+
 @app.route('/poster', methods=['GET', 'POST'])
 def new_post():
     # connect to database
@@ -603,15 +716,22 @@ def new_post():
     with open('static/temp_image.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))  # grab the image data
-    if request.form.get("filter") == "on":  # check if we need to add the filter to this
+    if request.form.get("filter") == "on":  # check if we need to add filter
         filter = True
     else:
         filter = False
-    cursor.execute(f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}", "{image_data}", "{request.form["name"]}", 0, "{request.form.get("desc")}","{filter}")')  # add the post to the table
+    cursor.execute(
+        f'INSERT INTO tPosts VALUES (NULL, "{session["username"]}",'
+        f' "{image_data}", "{request.form["name"]}",'
+        f' 0, "{request.form.get("desc")}","{filter}")')  # add the post
     db.commit()
     os.remove("static/temp_image.jpg")  # remove the temporary image
     return redirect(url_for("userpage", username=session["username"]))
+
+
 # Like Posts
+
+
 @app.route('/like', methods=['GET', 'POST'])
 def like_post():
     username = request.form["user"]
@@ -620,38 +740,55 @@ def like_post():
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # check if we've already liked this post
-    cursor.execute(f'SELECT * FROM tStoredLikes WHERE Username = "{username}" AND PostName = "{post}"')
+    cursor.execute(f'SELECT * FROM tStoredLikes WHERE Username = "{username}"'
+                   f' AND PostName = "{post}"')
     f = cursor.fetchone()
     if f is None:  # if we've not liked it yet
         # Insert into subscriptions table
-        cursor.execute(f'INSERT INTO tStoredLikes VALUES (NULL,"{username}","{post}")')
+        cursor.execute(f'INSERT INTO tStoredLikes VALUES (NULL,"{username}",'
+                       f'"{post}")')
         db.commit()
         # Get Follower count and convert from tuple to integer
-        likeCount = cursor.execute(f"SELECT Likes FROM tPosts WHERE PostName  = '{post}'")
+        likeCount = cursor.execute(f"SELECT Likes FROM tPosts WHERE PostName"
+                                   f"  = '{post}'")
         likeInt = int(str(likeCount.fetchone()).strip("( ),")) + 1
         # Update tUsers to add 1 to followerCount
-        cursor.execute(f"UPDATE tPosts SET Likes = {likeInt} WHERE PostName = '{post}'")
+        cursor.execute(f"UPDATE tPosts SET Likes = {likeInt} WHERE PostName "
+                       f"= '{post}'")
         db.commit()
         db.close()
-    return redirect(url_for(request.form['endpoint'], username=request.form["returnpage"], postname=request.form['post']))
+    return redirect(url_for(request.form['endpoint'],
+                            username=request.form["returnpage"],
+                            postname=request.form['post']))
+
+
 # Delete Posts
+
+
 @app.route('/page/<username>/post/<postname>/delete', methods=['GET', 'POST'])
 def delete_post(username, postname):
     delete_image_files()  # Remove all profile pics
-    delete_post_files()  # Remove all post files, the one we need will be added later
+    delete_post_files()  # Remove all post files
     print(f"{username} : {postname}")
     postImg = return_image(postname, username)
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
     # grab post data to display when deleting
-    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT Likes FROM tPosts WHERE Username = '{username}'"
+                   f" AND PostName = '{postname}'")
     likes = (cursor.fetchall())
-    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT PostDescription FROM tPosts WHERE Username = "
+                   f"'{username}' AND PostName = '{postname}'")
     desc = (cursor.fetchall())
-    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = '{username}' AND PostName = '{postname}'")
+    cursor.execute(f"SELECT PostName FROM tPosts WHERE Username = "
+                   f"'{username}' AND PostName = '{postname}'")
     title = (cursor.fetchall())
-    return render_template("delete.html", username=username, postname=postname, likes=likes, desc=desc, title=title, postImg=postImg)
+    return render_template("delete.html", username=username,
+                           postname=postname, likes=likes, desc=desc,
+                           title=title, postImg=postImg)
+
+
 @app.route('/deleter/<username>/<postname>', methods=['GET', 'POST'])
 def delete(username, postname):
 
@@ -659,11 +796,14 @@ def delete(username, postname):
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
     cursor = db.cursor()
-    cursor.execute(  # delete the post where the username and post name match up
-        f'DELETE FROM tPosts WHERE Username = "{username}" AND PostName = "{postname}"')
+    cursor.execute(
+        f'DELETE FROM tPosts WHERE Username = "{username}" '
+        f'AND PostName = "{postname}"')
     db.commit()
     os.remove(f"static/{postname}_{username}.jpg")
     return redirect(url_for("userpage", username=username))
+
+
 # Run the app
 if __name__ == "__main__":
     app.run(port=8080, debug=True)
