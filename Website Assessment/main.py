@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 
 def get_default_image():
+    """Get default profile image."""
     with open('static/default_profile.jpg', 'rb') as f:
         # Convert to Base64 for easy transfer
         image_data = str(base64.b64encode(f.read()))
@@ -15,6 +16,7 @@ def get_default_image():
 
 
 def return_image(image_name, username):
+    """Get a post's image."""
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -40,6 +42,7 @@ def return_image(image_name, username):
 
 
 def return_all_posts(username):
+    """Return all posts on a user's page."""
     # Connect to database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
@@ -52,6 +55,7 @@ def return_all_posts(username):
 
 
 def delete_image_files():
+    """Clear profile pictures from recent memory."""
     # Select from the Users table
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
@@ -67,6 +71,7 @@ def delete_image_files():
 
 
 def delete_post_files():
+    """Clear post images from recent memory."""
     # Get each username to delete profile pics from
     sql = "SELECT * FROM 'tUsers'"
     DATABASE = "database.db"
@@ -97,6 +102,7 @@ def delete_post_files():
 
 
 def get_profile_picture(username):
+    """Get a user's profile picture."""
     # Connect to the database
     DATABASE = "database.db"
     db = sqlite3.connect(DATABASE)
